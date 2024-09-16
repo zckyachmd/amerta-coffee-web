@@ -1,6 +1,6 @@
-# Kopi Amerta Web
+# Amerta Coffee Web
 
-Welcome to **Kopi Amerta Web**, the frontend for **Kopi Amerta**, your premium Indonesian coffee online store. This is a React-based application built with TypeScript and bundled using Vite for fast and optimized development.
+Welcome to **Amerta Coffee Web**, the frontend for **Amerta Coffee**, your premium Indonesian coffee online store. This is a React-based application built with TypeScript and bundled using Vite for fast and optimized development.
 
 ## Features
 
@@ -18,8 +18,8 @@ Welcome to **Kopi Amerta Web**, the frontend for **Kopi Amerta**, your premium I
 1. Clone the repository and install dependencies:
 
    ```bash
-   git clone https://github.com/zckyachmd/kopi-amerta-web.git
-   cd kopi-amerta-web
+   git clone https://github.com/zckyachmd/amerta-coffee-web.git
+   cd amerta-coffee-web
    bun install
    ```
 
