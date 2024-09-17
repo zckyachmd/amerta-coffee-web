@@ -11,7 +11,6 @@ node_modules
 dist
 dist-ssr
 *.local
-bun.lockb
 
 # Editor directories and files
 .vscode/*
@@ -23,3 +22,14 @@ bun.lockb
 *.njsproj
 *.sln
 *.sw?
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local

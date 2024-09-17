@@ -1,61 +1,77 @@
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { FaCartPlus, FaArrowRight } from "react-icons/fa";
+import { FaCartPlus, FaArrowRight, FaSpinner } from "react-icons/fa";
 
-const productsData = [
-  {
-    id: 1,
-    name: "Kopi Arabica",
-    thumbnail: "https://placehold.co/150x150?text=Kopi+Arabica",
-    price: 50000,
-  },
-  {
-    id: 2,
-    name: "Kopi Robusta",
-    thumbnail: "https://placehold.co/150x150?text=Kopi+Robusta",
-    price: 45000,
-  },
-  {
-    id: 3,
-    name: "Kopi Liberica",
-    thumbnail: "https://placehold.co/150x150?text=Kopi+Liberica",
-    price: 60000,
-  },
-  {
-    id: 4,
-    name: "Kopi Excelsa",
-    thumbnail: "https://placehold.co/150x150?text=Kopi+Excelsa",
-    price: 55000,
-  },
-  {
-    id: 5,
-    name: "Kopi Toraja",
-    thumbnail: "https://placehold.co/150x150?text=Kopi+Toraja",
-    price: 70000,
-  },
-  {
-    id: 6,
-    name: "Kopi Toraja",
-    thumbnail: "https://placehold.co/150x150?text=Kopi+Toraja",
-    price: 70000,
-  },
-];
+interface Product {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  slug: string;
+  image_url: string;
+}
+
+interface ApiResponse {
+  status: string;
+  data: {
+    products: Product[];
+    pagination: {
+      currentPage: number;
+      totalPages: number;
+      total: number;
+    };
+  };
+}
 
 const imageSlides = [
   { imageUrl: "https://placehold.co/1920x1080?text=Slider+1", url: "/page1" },
   { imageUrl: "https://placehold.co/1920x1080?text=Slider+2", url: "/page2" },
   { imageUrl: "https://placehold.co/1920x1080?text=Slider+3", url: "/page3" },
-  { imageUrl: "https://placehold.co/1920x1080?text=Slider+4", url: "/page4" },
-  { imageUrl: "https://placehold.co/1920x1080?text=Slider+5", url: "/page5" },
 ];
 
-const Home = () => {
+const Home: React.FC = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const baseUrl = import.meta.env.VITE_APP_API_BASEURL;
+      const queryParams = new URLSearchParams({
+        limit: "6",
+        sorts: JSON.stringify({ createdAt: "desc" }),
+      });
+      const url = `${baseUrl}/products?${queryParams.toString()}`;
+
+      try {
+        const response = await axios.get<ApiResponse>(url);
+        setProducts(response.data.data.products);
+        setLoading(false);
+      } catch {
+        setError("Failed to fetch products");
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <FaSpinner className="animate-spin text-4xl text-gray-600" />
+      </div>
+    );
+  }
+
   return (
-    <div className="p-4">
-      <div className="max-w-screen-xl mx-auto my-4">
-        {/* Slider */}
+    <>
+      {/* Slider */}
+      {imageSlides.length > 0 && (
         <div className="mb-12">
           <Slider
             imageSlides={imageSlides}
@@ -64,24 +80,33 @@ const Home = () => {
             nextButtonText="Next"
           />
         </div>
+      )}
 
-        {/* Products */}
-        <div>
-          <h1 className="text-3xl md:text-4xl font-bold mb-4 text-center">
-            Discover Our Exquisite Coffee Collection
-          </h1>
+      {/* Products */}
+      <div>
+        <h1 className="text-3xl md:text-4xl font-bold mb-4 text-center">
+          Discover Our Exquisite Coffee Collection
+        </h1>
+        {products.length === 0 ? (
+          <p className="text-xl font-semibold text-gray-600 text-center mt-6">
+            No products found.
+          </p>
+        ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-            {productsData.map((product) => (
+            {products.map((product) => (
               <Link
                 key={product.id}
-                to={`/product/${product.id}`}
+                to={`/product/${product.slug}`}
                 className="block"
               >
                 <Card className="shadow-sm rounded-sm overflow-hidden border border-gray-300">
                   <CardContent className="p-0">
                     <div className="w-full h-60">
                       <img
-                        src={product.thumbnail}
+                        src={
+                          product.image_url ||
+                          "https://placehold.co/150x150?text=No+Image"
+                        }
                         alt={product.name}
                         className="w-full h-full object-cover"
                       />
@@ -100,6 +125,8 @@ const Home = () => {
               </Link>
             ))}
           </div>
+        )}
+        {!error && products.length > 0 && (
           <div className="text-center mt-6">
             <Link to="/products">
               <Button className="bg-[#986B54] text-white hover:bg-[#8c5b43] px-6 py-3 rounded-full">
@@ -110,9 +137,9 @@ const Home = () => {
               </Button>
             </Link>
           </div>
-        </div>
+        )}
       </div>
-    </div>
+    </>
   );
 };
 

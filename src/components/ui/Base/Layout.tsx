@@ -9,8 +9,12 @@ const Layout = () => {
       <Navbar />
 
       {/* Main Content */}
-      <main className="flex-1 w-full px-0 py-0">
-        <Outlet />
+      <main className="flex-1 w-full pt-16 px-0 py-0">
+        <div className="p-4">
+          <div className="max-w-screen-xl mx-auto my-4">
+            <Outlet />
+          </div>
+        </div>
       </main>
 
       {/* Footer */}
