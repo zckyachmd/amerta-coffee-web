@@ -53,7 +53,7 @@ const Navbar = () => {
         {/* Menu (Desktop) */}
         <div className="hidden lg:flex lg:items-center lg:space-x-4">
           <Link
-            to="/"
+            to="login"
             className="flex items-center space-x-2 px-3 py-2 rounded"
           >
             <FaUser className="w-5 h-5 hover:text-gray-300" />
@@ -88,7 +88,7 @@ const Navbar = () => {
             </div>
             <div className="flex flex-col w-full">
               <Link
-                to="/"
+                to="/login"
                 className="flex items-center space-x-2 px-3 py-2 rounded text-white w-full"
               >
                 <FaUser className="w-5 h-5 hover:text-gray-300" />

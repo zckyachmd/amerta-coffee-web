@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { FaCartPlus, FaArrowRight, FaSpinner } from "react-icons/fa";
+import apiRequest from "@/utils/api";
 
 interface Product {
   id: number;
@@ -40,16 +40,19 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const baseUrl = import.meta.env.VITE_APP_API_BASEURL;
-      const queryParams = new URLSearchParams({
+      const queryParams = {
         limit: "6",
         sorts: JSON.stringify({ createdAt: "desc" }),
-      });
-      const url = `${baseUrl}/products?${queryParams.toString()}`;
+      };
 
       try {
-        const response = await axios.get<ApiResponse>(url);
-        setProducts(response.data.data.products);
+        const response = await apiRequest<ApiResponse>(
+          "/products",
+          "GET",
+          undefined,
+          queryParams
+        );
+        setProducts(response.data.products);
         setLoading(false);
       } catch {
         setError("Failed to fetch products");
