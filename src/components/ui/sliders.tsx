@@ -16,7 +16,7 @@ interface SliderProps {
   nextButtonText?: string;
 }
 
-const Slider = ({
+const Sliders = ({
   imageSlides,
   autoplayDelay,
   prevButtonText,
@@ -72,4 +72,4 @@ const Slider = ({
   );
 };
 
-export { Slider };
+export { Sliders };
