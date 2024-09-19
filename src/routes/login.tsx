@@ -1,18 +1,13 @@
 import { useForm, SubmitHandler } from "react-hook-form";
-import axios from "axios";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { APP_API_BASEURL } from "@/lib/env";
 
 type LoginFormInputs = {
   email: string;
   password: string;
-};
-
-type Issue = {
-  message: string;
-  path: string[];
 };
 
 const Login = () => {
@@ -25,33 +20,47 @@ const Login = () => {
 
   const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
     try {
-      const baseUrl = import.meta.env.VITE_APP_API_BASEURL;
-      const { data: responseData } = await axios.post<{ token: string }>(
-        `${baseUrl}/auth/login`,
-        data,
-        { headers: { "Content-Type": "application/json" } }
-      );
+      const response = await fetch(`${APP_API_BASEURL}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
 
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        const errorMessage = errorResponse.error.issues.length
+          ? errorResponse.error.issues
+              .map(
+                (issue: { message: string; path: string[] }) =>
+                  `Error: ${issue.message} (Field: ${issue.path.join(", ")})`
+              )
+              .join(", ")
+          : errorResponse.error?.toString() ||
+            "Login failed. Please try again.";
+
+        toast.error(errorMessage || "Something went wrong, please try again.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        return;
+      }
+
+      const responseData = await response.json();
       localStorage.setItem("accessToken", responseData.token);
+
       toast.success("Login successful!", {
         position: "top-right",
         autoClose: 3000,
       });
-      navigate("/dashboard");
-    } catch (error) {
-      const errorMessage = axios.isAxiosError(error)
-        ? error.response?.data?.error?.issues?.length
-          ? error.response.data.error.issues
-              .map(
-                (issue: Issue) =>
-                  `Error: ${issue.message} (Field: ${issue.path.join(", ")})`
-              )
-              .join(", ")
-          : error.response?.data?.error?.toString() ||
-            "Login failed. Please try again."
-        : "Something went wrong, please try again.";
 
-      toast.error(errorMessage, { position: "top-right", autoClose: 3000 });
+      navigate("/dashboard");
+    } catch {
+      toast.error("Something went wrong, please try again.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
     }
   };
 

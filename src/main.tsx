@@ -3,11 +3,9 @@ import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import Layout from "./components/ui/Base/Layout";
-import NotFoundPage from "./pages/NotFoundPage";
-import Home from "./pages/Home/Index";
-import Products from "./pages/Products/Index";
-import ProductDetail from "./pages/Products/Detail";
-import Login from "./pages/Auth/Login";
+import NotFound from "./routes/notFound";
+import Home, { loader as homeLoader } from "./routes/home";
+import Login from "./routes/login";
 import "react-toastify/dist/ReactToastify.css";
 import "./index.css";
 
@@ -19,22 +17,15 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <Home />,
+        loader: homeLoader,
       },
       {
-        path: "login",
+        path: "/login",
         element: <Login />,
       },
       {
-        path: "products",
-        element: <Products />,
-      },
-      {
-        path: "products/:productId",
-        element: <ProductDetail />,
-      },
-      {
         path: "*",
-        element: <NotFoundPage />,
+        element: <NotFound />,
       },
     ],
   },
