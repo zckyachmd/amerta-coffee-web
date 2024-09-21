@@ -13,6 +13,7 @@ import RegisterRoute from "@/routes/register/index";
 import LoginRouter from "@/routes/login/index";
 import ProfileRoute from "@/routes/profile/index";
 import ProductRoute from "@/routes/products/index";
+import ProductDetailRoute from "@/routes/product-detail/index";
 
 const router = createBrowserRouter([
   {
@@ -31,8 +32,9 @@ const router = createBrowserRouter([
         loader: ProductRoute.ProductsLoader,
       },
       {
-        path: "/products/:slug",
-        element: <ProductRoute.ProductDetail />,
+        path: "/product/:slug",
+        element: <ProductDetailRoute.ProductDetail />,
+        loader: ProductDetailRoute.ProductLoader,
       },
       {
         path: "/register",

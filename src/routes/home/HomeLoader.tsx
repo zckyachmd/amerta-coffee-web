@@ -1,9 +1,31 @@
 import { APP_API_BASEURL } from "@/lib/env";
 
 const imageSlides = [
-  { imageUrl: "https://placehold.co/1920x1080?text=Slider+1", url: "/page1" },
-  { imageUrl: "https://placehold.co/1920x1080?text=Slider+2", url: "/page2" },
-  { imageUrl: "https://placehold.co/1920x1080?text=Slider+3", url: "/page3" },
+  {
+    imageUrl:
+      "https://d8g5mz6srwlcs.cloudfront.net/original/66e26a620c6ce765056231.jpg",
+    url: "#",
+  },
+  {
+    imageUrl:
+      "https://d8g5mz6srwlcs.cloudfront.net/original/66e26e3ea0a87535503441.jpg",
+    url: "#",
+  },
+  {
+    imageUrl:
+      "https://d8g5mz6srwlcs.cloudfront.net/original/66e26e3ea0a87535503441.jpg",
+    url: "#",
+  },
+  {
+    imageUrl:
+      "https://d8g5mz6srwlcs.cloudfront.net/original/66e256e2bc73c391604882.jpg",
+    url: "#",
+  },
+  {
+    imageUrl:
+      "https://d8g5mz6srwlcs.cloudfront.net/original/66e3a5327e313561543844.jpg",
+    url: "#",
+  },
 ];
 
 export const loader = async () => {

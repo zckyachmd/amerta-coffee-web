@@ -1,4 +1,4 @@
-import { useLoaderData, useNavigate, Link } from "react-router-dom";
+import { useLoaderData, Link } from "react-router-dom";
 import { FaArrowRight } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import { Sliders } from "@/components/ui/sliders";
@@ -9,20 +9,11 @@ const Home = () => {
   const { products, imageSlides } = useLoaderData() as Awaited<
     ReturnType<typeof loader>
   >;
-  const navigate = useNavigate();
-
-  const handleCardClick = (
-    slug: string,
-    e: React.MouseEvent<HTMLDivElement>
-  ) => {
-    if ((e.target as HTMLElement).closest("button")) return;
-    navigate(`/products/${slug}`);
-  };
 
   return (
     <>
       {imageSlides.length > 0 && (
-        <div className="mb-12">
+        <div className="mb-12 rounded-lg overflow-hidden">
           <Sliders
             imageSlides={imageSlides}
             autoplayDelay={4000}
@@ -35,7 +26,7 @@ const Home = () => {
         <h1 className="text-3xl md:text-4xl font-bold mb-4 text-center">
           Discover Our Exquisite Coffee Collection
         </h1>
-        <ProductList products={products} handleCardClick={handleCardClick} />
+        <ProductList products={products} />
         <div className="text-center mt-6">
           <div className="text-center mt-6">
             <Link to="/products">

@@ -6,18 +6,10 @@ import ProductList from "@/components/ProductList";
 import Filter from "@/components/Filter";
 
 const Products = () => {
+  const navigate = useNavigate();
   const { products, total } = useLoaderData() as Awaited<
     ReturnType<typeof loader>
   >;
-  const navigate = useNavigate();
-
-  const handleCardClick = (
-    slug: string,
-    e: React.MouseEvent<HTMLDivElement>
-  ) => {
-    if ((e.target as HTMLElement).closest("button")) return;
-    navigate(`/products/${slug}`);
-  };
 
   return (
     <div className="container mx-auto py-8">
@@ -46,7 +38,7 @@ const Products = () => {
           />
         </div>
         <div className="col-span-4 md:col-span-3">
-          <ProductList products={products} handleCardClick={handleCardClick} />
+          <ProductList products={products} />
           {products.length < total && (
             <div className="text-center mt-6">
               <Button
