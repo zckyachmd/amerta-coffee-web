@@ -1,4 +1,3 @@
-// components/Filter.tsx
 import React, { useState } from "react";
 
 interface FilterProps {
@@ -90,7 +89,7 @@ const Filter: React.FC<FilterProps> = ({
         </div>
         <button
           onClick={handlePriceChange}
-          className="mt-2 bg-[#986B54] text-white px-4 py-2 rounded hover:bg-[#8c5b43]"
+          className="mt-2 bg-coffee text-white hover:bg-coffee-hover px-4 py-2 rounded"
         >
           Apply
         </button>

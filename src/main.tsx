@@ -1,47 +1,59 @@
 import "@/index.css";
 import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { AuthProvider } from "@/context/AuthProvider";
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
 import Layout from "@/components/ui/Base/Layout";
-import NotFound from "@/routes/NotFound";
-import Home, { loader as homeLoader } from "@/routes/Home";
-import Products from "@/routes/Products";
-import ProductDetail from "@/routes/ProductDetail";
-import Login from "@/routes/Login";
-import PrivateRoute from "@/routes/PrivateRoute";
-import Profile from "@/routes/Profile";
+import ProtectedRoute from "./routes/ProtectedRoute";
+import ServerError from "./components/ServerError";
+import HomeRoute from "@/routes/home/index";
+import RegisterRoute from "@/routes/register/index";
+import LoginRouter from "@/routes/login/index";
+import ProfileRoute from "@/routes/profile/index";
+import ProductRoute from "@/routes/products/index";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
+    errorElement: <ServerError />,
     children: [
       {
         path: "/",
-        element: <Home />,
-        loader: homeLoader,
+        element: <HomeRoute.Home />,
+        loader: HomeRoute.HomeLoader,
       },
       {
         path: "/products",
-        element: <Products />,
+        element: <ProductRoute.Products />,
+        loader: ProductRoute.ProductsLoader,
       },
       {
         path: "/products/:slug",
-        element: <ProductDetail />,
+        element: <ProductRoute.ProductDetail />,
+      },
+      {
+        path: "/register",
+        element: <RegisterRoute.Register />,
+        loader: RegisterRoute.RegisterLoader,
+        action: RegisterRoute.RegisterAction,
       },
       {
         path: "/login",
-        element: <Login />,
+        element: <LoginRouter.Login />,
+        loader: LoginRouter.LoginLoader,
+        action: LoginRouter.LoginAction,
       },
       {
         path: "/profile",
-        element: PrivateRoute(<Profile />),
-      },
-      {
-        path: "*",
-        element: <NotFound />,
+        element: (
+          <ProtectedRoute>
+            <ProfileRoute.Profile />
+          </ProtectedRoute>
+        ),
+        loader: ProfileRoute.ProfileLoader,
       },
     ],
   },
@@ -49,7 +61,9 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
-    <ToastContainer />
+    <AuthProvider>
+      <RouterProvider router={router} />
+      <ToastContainer />
+    </AuthProvider>
   </React.StrictMode>
 );

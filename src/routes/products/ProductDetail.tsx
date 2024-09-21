@@ -47,7 +47,6 @@ const ProductDetail = () => {
   return (
     <div className="container mx-auto py-8">
       <div className="flex flex-col md:flex-row gap-8">
-        {/* Image Slider */}
         <div className="md:w-1/2">
           <Sliders
             imageSlides={product.images.map((url) => ({ imageUrl: url }))}
@@ -55,7 +54,6 @@ const ProductDetail = () => {
           />
         </div>
 
-        {/* Product Details */}
         <div className="md:w-1/2 flex flex-col">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-3xl font-bold">{product.name}</h1>
@@ -65,13 +63,12 @@ const ProductDetail = () => {
             Rp {product.price.toLocaleString("id-ID")}
           </p>
 
-          {/* Tabs */}
           <div className="mt-8">
             <div className="flex space-x-4 border-b border-gray-300">
               <button
                 className={`py-2 px-4 text-sm font-medium ${
                   activeTab === "description"
-                    ? "border-b-2 border-[#986B54] text-[#986B54]"
+                    ? "border-b-2 border-coffee text-coffee"
                     : "text-gray-600"
                 }`}
                 onClick={() => setActiveTab("description")}
@@ -81,7 +78,7 @@ const ProductDetail = () => {
               <button
                 className={`py-2 px-4 text-sm font-medium ${
                   activeTab === "specification"
-                    ? "border-b-2 border-[#986B54] text-[#986B54]"
+                    ? "border-b-2 border-coffee text-coffee"
                     : "text-gray-600"
                 }`}
                 onClick={() => setActiveTab("specification")}
@@ -91,7 +88,7 @@ const ProductDetail = () => {
               <button
                 className={`py-2 px-4 text-sm font-medium ${
                   activeTab === "guide"
-                    ? "border-b-2 border-[#986B54] text-[#986B54]"
+                    ? "border-b-2 border-coffee text-coffee"
                     : "text-gray-600"
                 }`}
                 onClick={() => setActiveTab("guide")}
@@ -121,7 +118,6 @@ const ProductDetail = () => {
             </div>
           </div>
 
-          {/* Quantity Selector and Add to Cart Button */}
           <div className="flex flex-col mt-10">
             <div className="flex items-center mb-6">
               <Button
@@ -145,7 +141,7 @@ const ProductDetail = () => {
               </Button>
             </div>
 
-            <Button className="bg-[#986B54] text-white hover:bg-[#8c5b43] px-6 py-3 rounded-full w-full">
+            <Button className="bg-coffee text-white hover:bg-coffee-hover px-6 py-3 rounded-full w-full">
               <FaCartPlus className="mr-2" /> Add to Cart
             </Button>
           </div>

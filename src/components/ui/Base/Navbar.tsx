@@ -1,23 +1,60 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { FaUser, FaShoppingCart, FaSearch, FaBars } from "react-icons/fa";
 import { IoMdClose } from "react-icons/io";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import useAuth from "@/hooks/useAuth";
+import Swal from "sweetalert2";
 
 const Navbar = () => {
+  const navigate = useNavigate();
+  const auth = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleMenu = () => setIsOpen(!isOpen);
+
+  const logout = () => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You will be logged out of your account!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, logout",
+      confirmButtonColor: "#986B54",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        auth.logout();
+
+        Swal.fire({
+          icon: "success",
+          title: "Logout Successful!",
+          text: "You have been logged out of your account!",
+          confirmButtonText: "OK!",
+          confirmButtonColor: "#986B54",
+        });
+
+        navigate("/login");
+      }
+    });
+  };
 
   return (
     <nav className="bg-[#232323] text-white fixed top-0 left-0 w-full z-50 shadow-md">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         {/* Logo and Title */}
         <div className="flex items-center space-x-4">
-          <img src="/logo.svg" alt="Logo" className="w-12 h-12" />
-          <Link to="/" className="text-xl font-semibold">
-            Amerta Coffee
+          <Link to="/" className="flex items-center text-xl font-semibold">
+            <img src="/logo.svg" alt="Logo" className="w-12 h-12" />
+            <span className="ml-2">Amerta Coffee</span>
           </Link>
         </div>
 
@@ -52,14 +89,39 @@ const Navbar = () => {
 
         {/* Menu (Desktop) */}
         <div className="hidden lg:flex lg:items-center lg:space-x-4">
+          {auth.isLoggedIn ? (
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button className="flex items-center space-x-2 px-3 py-2 rounded-none bg-transparent hover:bg-transparent hover:text-gray-300">
+                  <FaUser className="w-5 h-5 hover:text-gray-300" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <Link to="/profile">
+                  <DropdownMenuItem className="hover:bg-transparent">
+                    Profile
+                  </DropdownMenuItem>
+                </Link>
+                <DropdownMenuItem
+                  onClick={logout}
+                  className="hover:bg-transparent"
+                >
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Link
+              to="/login"
+              className="flex items-center space-x-2 px-3 py-2 rounded"
+            >
+              <FaUser className="w-5 h-5 hover:text-gray-300" />
+            </Link>
+          )}
           <Link
-            to="login"
-            className="flex items-center space-x-2 px-3 py-2 rounded"
-          >
-            <FaUser className="w-5 h-5 hover:text-gray-300" />
-          </Link>
-          <Link
-            to="/products"
+            to="#"
             className="flex items-center space-x-2 px-3 py-2 rounded"
           >
             <FaShoppingCart className="w-5 h-5 hover:text-gray-300" />
@@ -72,7 +134,7 @@ const Navbar = () => {
             isOpen ? "block" : "hidden"
           }`}
         >
-          <div className="flex flex-col items-center space-y-4 py-4 px-6">
+          <div className="flex flex-col items-start space-y-4 py-4 px-6">
             <div className="flex w-full max-w-lg items-center space-x-2 my-2">
               <Input
                 type="text"
@@ -86,22 +148,48 @@ const Navbar = () => {
                 <FaSearch className="w-5 h-5" />
               </Button>
             </div>
-            <div className="flex flex-col w-full">
+            {auth.isLoggedIn ? (
+              <div className="flex w-full">
+                <DropdownMenu modal={false}>
+                  <DropdownMenuTrigger asChild>
+                    <Button className="flex items-start space-x-2 px-3 py-2 rounded-none bg-transparent hover:bg-transparent text-white w-auto">
+                      <FaUser className="w-5 h-5 hover:text-gray-300" />
+                      <span>My Account</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <Link to="/profile">
+                      <DropdownMenuItem className="hover:bg-transparent">
+                        Profile
+                      </DropdownMenuItem>
+                    </Link>
+                    <DropdownMenuItem
+                      onClick={logout}
+                      className="hover:bg-transparent"
+                    >
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            ) : (
               <Link
                 to="/login"
-                className="flex items-center space-x-2 px-3 py-2 rounded text-white w-full"
+                className="flex items-center space-x-2 px-3 py-2 rounded text-white w-auto"
               >
                 <FaUser className="w-5 h-5 hover:text-gray-300" />
-                <span>Profile</span>
+                <span>Login</span>
               </Link>
-              <Link
-                to="/products"
-                className="flex items-center space-x-2 px-3 py-2 rounded text-white w-full"
-              >
-                <FaShoppingCart className="w-5 h-5 hover:text-gray-300" />
-                <span>Cart</span>
-              </Link>
-            </div>
+            )}
+            <Link
+              to="#"
+              className="flex items-center space-x-2 px-3 py-2 rounded text-white w-full"
+            >
+              <FaShoppingCart className="w-5 h-5 hover:text-gray-300" />
+              <span>Cart</span>
+            </Link>
           </div>
         </div>
       </div>
