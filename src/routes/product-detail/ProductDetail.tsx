@@ -1,12 +1,22 @@
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sliders } from "@/components/ui/sliders";
 import ShareButton from "@/components/ShareButton";
 import { FaCartPlus } from "react-icons/fa";
-import { useLoaderData } from "react-router-dom";
+import { toast } from "react-toastify";
+import { action } from "./ProductDetailAction";
+import { useLoaderData, useNavigate } from "react-router-dom";
+
+type ProductFormInputs = {
+  quantity: number;
+};
 
 const ProductDetail = () => {
+  const navigate = useNavigate();
+  const { handleSubmit } = useForm<ProductFormInputs>();
+
   const [quantity, setQuantity] = useState<number>(1);
   const [activeTab, setActiveTab] = useState<string>("description");
 
@@ -36,6 +46,33 @@ const ProductDetail = () => {
     const value = Number(e.target.value);
     if (!isNaN(value) && value > 0 && value <= product.stock_qty) {
       setQuantity(value);
+    }
+  };
+
+  const onSubmit = async () => {
+    if (quantity <= 0) {
+      toast.error("Quantity is required", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("productId", product.id);
+    formData.append("quantity", quantity.toString());
+
+    const result = await action({
+      request: new Request("", { method: "POST", body: formData }),
+      navigate,
+    });
+
+    if (result && typeof result === "object" && "errors" in result) {
+      toast.error("Failed to add product to cart", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      return;
     }
   };
 
@@ -150,7 +187,10 @@ const ProductDetail = () => {
               </Button>
             </div>
 
-            <Button className="bg-coffee text-white hover:bg-coffee-hover px-6 py-3 rounded-full w-full">
+            <Button
+              className="bg-coffee text-white hover:bg-coffee-hover px-6 py-3 rounded-full w-full"
+              onClick={handleSubmit(onSubmit)}
+            >
               <FaCartPlus className="mr-2" /> Add to Cart
             </Button>
           </div>

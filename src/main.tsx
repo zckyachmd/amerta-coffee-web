@@ -14,6 +14,7 @@ import LoginRouter from "@/routes/login/index";
 import ProfileRoute from "@/routes/profile/index";
 import ProductRoute from "@/routes/products/index";
 import ProductDetailRoute from "@/routes/product-detail/index";
+import CartRoute from "@/routes/cart/index";
 
 const router = createBrowserRouter([
   {
@@ -35,6 +36,7 @@ const router = createBrowserRouter([
         path: "/product/:slug",
         element: <ProductDetailRoute.ProductDetail />,
         loader: ProductDetailRoute.ProductLoader,
+        action: ProductDetailRoute.ProductDetailAction,
       },
       {
         path: "/register",
@@ -47,6 +49,15 @@ const router = createBrowserRouter([
         element: <LoginRouter.Login />,
         loader: LoginRouter.LoginLoader,
         action: LoginRouter.LoginAction,
+      },
+      {
+        path: "/carts",
+        element: (
+          <ProtectedRoute>
+            <CartRoute.Cart />
+          </ProtectedRoute>
+        ),
+        loader: CartRoute.CartLoader,
       },
       {
         path: "/profile",

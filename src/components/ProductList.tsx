@@ -3,6 +3,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FaCartPlus } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { getAccessToken } from "@/lib/auth";
+import { APP_API_BASEURL } from "@/lib/env";
 
 interface ProductListProps {
   products: any;
@@ -13,6 +16,38 @@ const ProductList: React.FC<ProductListProps> = ({ products }) => {
 
   const handleCardClick = (slug: string) => {
     navigate(`/product/${slug}`);
+  };
+
+  const handleAddToCart = async (productId: string) => {
+    const accessToken = getAccessToken();
+
+    if (!accessToken) {
+      toast.error("Please log in to add items to the cart.");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${APP_API_BASEURL}/carts/items`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          productId,
+          quantity: 1,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add item to cart.");
+      }
+
+      toast.success("Item added to cart!");
+    } catch {
+      toast.error("Failed to add item to cart.");
+    }
   };
 
   return (
@@ -48,7 +83,13 @@ const ProductList: React.FC<ProductListProps> = ({ products }) => {
                     Rp {product.price.toLocaleString("id-ID")}
                   </p>
                   <div className="mt-auto">
-                    <Button className="w-full bg-coffee text-white hover:bg-coffee-hover py-2">
+                    <Button
+                      className="w-full bg-coffee text-white hover:bg-coffee-hover py-2"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddToCart(product.id);
+                      }}
+                    >
                       <FaCartPlus className="w-6 h-6 mr-2" /> Add to Cart
                     </Button>
                   </div>

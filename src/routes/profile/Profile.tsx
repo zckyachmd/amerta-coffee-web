@@ -19,7 +19,7 @@ const Profile = () => {
   }
 
   return (
-    <div className="flex flex-col items-center p-6 max-w-xl mx-auto">
+    <div className="flex flex-col items-center py-20 max-w-xl mx-auto">
       <div className="flex items-center space-x-4 mb-6">
         <Avatar className="w-24 h-24 rounded-full border-4 border-gray-300 shadow-lg hover:shadow-xl transition-shadow duration-200">
           <AvatarImage src={user.avatar} alt={user.name} />

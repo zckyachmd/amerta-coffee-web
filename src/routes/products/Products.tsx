@@ -11,10 +11,8 @@ const Products = () => {
   >;
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // State for sorting
   const [sortBy, setSortBy] = useState<string>("name_asc");
 
-  // Helper function to merge existing query params
   const updateParams = useCallback(
     (newParams: any) => {
       const params = new URLSearchParams(searchParams);
@@ -32,7 +30,6 @@ const Products = () => {
     [searchParams, setSearchParams]
   );
 
-  // Handle sorting changes
   const applySorting = useCallback(
     (newSort: string) => {
       setSortBy(newSort);
