@@ -29,7 +29,7 @@ const ProductList: React.FC<ProductListProps> = ({ products }) => {
               className="shadow-sm rounded-sm overflow-hidden border border-gray-300 cursor-pointer"
               onClick={() => handleCardClick(product.slug)}
             >
-              <CardContent className="p-0">
+              <CardContent className="p-0 flex flex-col">
                 <div className="w-full h-60">
                   <img
                     src={
@@ -40,14 +40,18 @@ const ProductList: React.FC<ProductListProps> = ({ products }) => {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold">{product.name}</h3>
-                  <p className="text-gray-700">
+                <div className="p-4 flex flex-col flex-grow">
+                  <h3 className="text-lg font-semibold overflow-hidden text-ellipsis whitespace-nowrap">
+                    {product.name}
+                  </h3>
+                  <p className="text-gray-700 mb-4">
                     Rp {product.price.toLocaleString("id-ID")}
                   </p>
-                  <Button className="mt-2 w-full bg-coffee text-white hover:bg-coffee-hover py-2">
-                    <FaCartPlus className="w-6 h-6 mr-2" /> Add to Cart
-                  </Button>
+                  <div className="mt-auto">
+                    <Button className="w-full bg-coffee text-white hover:bg-coffee-hover py-2">
+                      <FaCartPlus className="w-6 h-6 mr-2" /> Add to Cart
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

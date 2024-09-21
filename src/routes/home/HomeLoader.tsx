@@ -13,11 +13,6 @@ const imageSlides = [
   },
   {
     imageUrl:
-      "https://d8g5mz6srwlcs.cloudfront.net/original/66e26e3ea0a87535503441.jpg",
-    url: "#",
-  },
-  {
-    imageUrl:
       "https://d8g5mz6srwlcs.cloudfront.net/original/66e256e2bc73c391604882.jpg",
     url: "#",
   },
@@ -30,7 +25,11 @@ const imageSlides = [
 
 export const loader = async () => {
   try {
-    const response = await fetch(`${APP_API_BASEURL}/products?limit=6`);
+    const response = await fetch(
+      `${APP_API_BASEURL}/products?limit=3&s=${encodeURIComponent(
+        JSON.stringify({ createdAt: "desc" })
+      )}`
+    );
 
     if (!response.ok) {
       throw new Error("Failed to fetch products");

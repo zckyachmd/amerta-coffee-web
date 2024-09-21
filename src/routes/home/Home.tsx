@@ -13,7 +13,7 @@ const Home = () => {
   return (
     <>
       {imageSlides.length > 0 && (
-        <div className="mb-12 rounded-lg overflow-hidden">
+        <div className="mb-12 rounded-lg overflow-hidden shadow-lg">
           <Sliders
             imageSlides={imageSlides}
             autoplayDelay={4000}
@@ -22,20 +22,22 @@ const Home = () => {
           />
         </div>
       )}
-      <div>
-        <h1 className="text-3xl md:text-4xl font-bold mb-4 text-center">
+      <div className="px-4 md:px-0 max-w-6xl mx-auto">
+        <h1 className="text-3xl md:text-4xl font-bold mb-6 text-center text-gray-800">
           Discover Our Exquisite Coffee Collection
         </h1>
+        <p className="text-center text-lg text-gray-600 mb-8">
+          Explore a variety of flavors and find your perfect brew. Quality beans
+          sourced from the best regions around the world.
+        </p>
         <ProductList products={products} />
         <div className="text-center mt-6">
-          <div className="text-center mt-6">
-            <Link to="/products">
-              <Button className="bg-coffee text-white hover:bg-coffee-hover px-6 py-3 rounded-full">
-                <span className="mr-2">Browse More Coffee</span>
-                <FaArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
-          </div>
+          <Link to="/products">
+            <Button className="bg-coffee text-white hover:bg-coffee-hover px-6 py-3 rounded-full transition duration-300 transform hover:scale-105">
+              <span className="mr-2">Browse More Coffee</span>
+              <FaArrowRight className="w-4 h-4" />
+            </Button>
+          </Link>
         </div>
       </div>
     </>
