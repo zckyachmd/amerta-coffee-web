@@ -19,6 +19,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const auth = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
@@ -47,6 +48,20 @@ const Navbar = () => {
     });
   };
 
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (searchQuery.trim()) {
+      navigate(
+        `/products?q=${encodeURIComponent(
+          JSON.stringify({ name: searchQuery })
+        )}`
+      );
+    } else {
+      navigate("/products");
+    }
+  };
+
   return (
     <nav className="bg-[#232323] text-white fixed top-0 left-0 w-full z-50 shadow-md">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -60,10 +75,15 @@ const Navbar = () => {
 
         {/* Search Form */}
         <div className="hidden lg:flex flex-1 justify-center mx-6">
-          <form className="flex w-full max-w-lg items-center space-x-2">
+          <form
+            onSubmit={handleSearchSubmit}
+            className="flex w-full max-w-lg items-center space-x-2"
+          >
             <Input
               type="text"
               placeholder="Find your favorite coffee..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full py-2 px-4 rounded-lg text-black focus:outline-none"
             />
             <Button
@@ -139,10 +159,13 @@ const Navbar = () => {
               <Input
                 type="text"
                 placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full py-2 px-4 rounded-lg text-black focus:outline-none"
               />
               <Button
                 type="submit"
+                onClick={handleSearchSubmit}
                 className="bg-gray-600 text-white rounded-lg hover:bg-gray-500"
               >
                 <FaSearch className="w-5 h-5" />
