@@ -12,6 +12,7 @@ const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [sortBy, setSortBy] = useState<string>("name_asc");
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
 
   const updateParams = useCallback(
     (newParams: any) => {
@@ -39,8 +40,12 @@ const Products = () => {
   );
 
   useEffect(() => {
+    if (isFirstLoad) {
+      window.scrollTo(0, 0);
+      setIsFirstLoad(false);
+    }
     applySorting(sortBy);
-  }, [applySorting, sortBy]);
+  }, [applySorting, sortBy, isFirstLoad]);
 
   return (
     <div className="container mx-auto py-8">
@@ -64,25 +69,26 @@ const Products = () => {
         <h3 className="text-lg font-semibold text-left w-full md:w-auto mb-2 md:mb-0">
           Sort By:
         </h3>
-        <div className="flex space-x-2 md:ml-auto">
+        <div className="flex flex-wrap gap-x-4 md:ml-auto">
           {["name_asc", "name_desc", "price_asc", "price_desc"].map((sort) => (
-            <Button
-              key={sort}
-              onClick={() => applySorting(sort)}
-              className={`px-4 py-2 text-sm font-medium rounded transition-all ${
-                sortBy === sort
-                  ? "bg-coffee text-white"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
-            >
-              {sort === "name_asc"
-                ? "Name A-Z"
-                : sort === "name_desc"
-                ? "Name Z-A"
-                : sort === "price_asc"
-                ? "Price Low to High"
-                : "Price High to Low"}
-            </Button>
+            <div key={sort} className="mb-2">
+              <Button
+                onClick={() => applySorting(sort)}
+                className={`px-4 py-2 text-sm font-medium rounded transition-all ${
+                  sortBy === sort
+                    ? "bg-coffee text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                {sort === "name_asc"
+                  ? "Name A-Z"
+                  : sort === "name_desc"
+                  ? "Name Z-A"
+                  : sort === "price_asc"
+                  ? "Price Low to High"
+                  : "Price High to Low"}
+              </Button>
+            </div>
           ))}
         </div>
       </div>

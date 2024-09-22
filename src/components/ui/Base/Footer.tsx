@@ -7,6 +7,10 @@ import {
   FaPhone,
   FaEnvelope,
 } from "react-icons/fa";
+import bukalapakLogo from "../../../assets/marketplace-bukalapak.webp";
+import tokopediaLogo from "../../../assets/marketplace-tokopedia.webp";
+import lazadaLogo from "../../../assets/marketplace-lazada.webp";
+import shopeeLogo from "../../../assets/marketplace-shopee.webp";
 
 const Footer = () => {
   return (
@@ -146,8 +150,8 @@ const Footer = () => {
                   className="block w-16 h-16"
                 >
                   <img
-                    src="https://placehold.co/150x150?text=Marketplace"
-                    alt="Marketplace 1"
+                    src={`${bukalapakLogo}`}
+                    alt="Bukalapak"
                     className="w-full h-full object-cover"
                   />
                 </a>
@@ -158,8 +162,8 @@ const Footer = () => {
                   className="block w-16 h-16"
                 >
                   <img
-                    src="https://placehold.co/150x150?text=Marketplace"
-                    alt="Marketplace 2"
+                    src={`${tokopediaLogo}`}
+                    alt="Tokopedia"
                     className="w-full h-full object-cover"
                   />
                 </a>
@@ -170,8 +174,8 @@ const Footer = () => {
                   className="block w-16 h-16"
                 >
                   <img
-                    src="https://placehold.co/150x150?text=Marketplace"
-                    alt="Marketplace 3"
+                    src={`${lazadaLogo}`}
+                    alt="Lazada"
                     className="w-full h-full object-cover"
                   />
                 </a>
@@ -182,8 +186,8 @@ const Footer = () => {
                   className="block w-16 h-16"
                 >
                   <img
-                    src="https://placehold.co/150x150?text=Marketplace"
-                    alt="Marketplace 4"
+                    src={`${shopeeLogo}`}
+                    alt="Shopee"
                     className="w-full h-full object-cover"
                   />
                 </a>

@@ -1,6 +1,6 @@
 import Navbar from "./Navbar";
 import Footer from "./Footer";
-import { Outlet } from "react-router-dom";
+import { Outlet, ScrollRestoration } from "react-router-dom";
 
 const Layout = () => {
   return (
@@ -13,6 +13,14 @@ const Layout = () => {
         <div className="p-4">
           <div className="max-w-screen-xl mx-auto my-4">
             <Outlet />
+            <ScrollRestoration
+              getKey={(location) => {
+                const paths = ["/products"];
+                return paths.includes(location.pathname)
+                  ? location.pathname
+                  : location.key;
+              }}
+            />
           </div>
         </div>
       </main>
