@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import { APP_API_BASEURL } from "@/lib/env";
 import useAuth from "@/hooks/useAuth";
 import Swal from "sweetalert2";
 
@@ -23,16 +24,28 @@ const Navbar = () => {
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
-  const logout = () => {
-    Swal.fire({
+  const logout = async () => {
+    const result = await Swal.fire({
       title: "Are you sure?",
       text: "You will be logged out of your account!",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
       confirmButtonText: "Yes, logout",
-    }).then((result) => {
-      if (result.isConfirmed) {
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const response = await fetch(`${APP_API_BASEURL}/auth/logout`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          throw new Error("Logout failed!");
+        }
+
         auth.logout();
 
         Swal.fire({
@@ -44,8 +57,14 @@ const Navbar = () => {
         });
 
         navigate("/login");
+      } catch (error: Error | any) {
+        Swal.fire({
+          icon: "error",
+          title: error.message,
+          text: "There was a problem logging you out. Please try again.",
+        });
       }
-    });
+    }
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {

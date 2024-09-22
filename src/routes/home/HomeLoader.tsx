@@ -28,16 +28,15 @@ export const loader = async () => {
     const response = await fetch(
       `${APP_API_BASEURL}/products?limit=3&s=${encodeURIComponent(
         JSON.stringify({ createdAt: "desc" })
-      )}`
+      )}`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      }
     );
 
-    if (!response.ok) {
-      throw new Error("Failed to fetch products");
-    }
-
-    const data = (await response.json()) as { data: { products: any } };
-
-    return { products: data.data?.products, imageSlides };
+    const { data } = await response.json();
+    return { products: data.products, imageSlides };
   } catch {
     return { products: [], imageSlides };
   }

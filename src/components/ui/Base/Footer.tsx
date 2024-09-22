@@ -7,10 +7,6 @@ import {
   FaPhone,
   FaEnvelope,
 } from "react-icons/fa";
-import bukalapakLogo from "../../../assets/marketplace-bukalapak.webp";
-import tokopediaLogo from "../../../assets/marketplace-tokopedia.webp";
-import lazadaLogo from "../../../assets/marketplace-lazada.webp";
-import shopeeLogo from "../../../assets/marketplace-shopee.webp";
 
 const Footer = () => {
   return (
@@ -150,7 +146,7 @@ const Footer = () => {
                   className="block w-16 h-16"
                 >
                   <img
-                    src={`${bukalapakLogo}`}
+                    src="https://ucarecdn.com/5c84ca33-abfa-490f-b651-672a7ad8e55e/-/preview/101x100/"
                     alt="Bukalapak"
                     className="w-full h-full object-cover"
                   />
@@ -162,7 +158,7 @@ const Footer = () => {
                   className="block w-16 h-16"
                 >
                   <img
-                    src={`${tokopediaLogo}`}
+                    src="https://ucarecdn.com/c6b8fed6-7940-475d-889d-72469d66bc0a/-/preview/101x101/"
                     alt="Tokopedia"
                     className="w-full h-full object-cover"
                   />
@@ -174,7 +170,7 @@ const Footer = () => {
                   className="block w-16 h-16"
                 >
                   <img
-                    src={`${lazadaLogo}`}
+                    src="https://ucarecdn.com/81365ad8-156d-4ea1-b80e-5437aff8f881/-/preview/101x100/"
                     alt="Lazada"
                     className="w-full h-full object-cover"
                   />
@@ -186,7 +182,7 @@ const Footer = () => {
                   className="block w-16 h-16"
                 >
                   <img
-                    src={`${shopeeLogo}`}
+                    src="https://ucarecdn.com/bfdc6a9e-b71f-4e8a-a9f9-27bf84196171/-/preview/100x100/"
                     alt="Shopee"
                     className="w-full h-full object-cover"
                   />

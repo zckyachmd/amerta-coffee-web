@@ -21,17 +21,16 @@ export const loader = async ({ request }: { request: Request }) => {
 
   try {
     const response = await fetch(
-      `${APP_API_BASEURL}/products?${params.toString()}`
+      `${APP_API_BASEURL}/products?${params.toString()}`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      }
     );
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch products");
-    }
 
     const { data } = await response.json();
     return { products: data.products, total: data.totalData };
-  } catch (error) {
-    console.error(error);
+  } catch {
     return { products: [], total: 0 };
   }
 };

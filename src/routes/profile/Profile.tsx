@@ -12,11 +12,6 @@ import { FaHistory } from "react-icons/fa";
 
 const Profile = () => {
   const { user } = useLoaderData() as Awaited<ReturnType<typeof loader>>;
-  if (!user) {
-    throw new Response("Failed to fetch profile", {
-      status: 500,
-    });
-  }
 
   return (
     <div className="flex flex-col items-center py-20 max-w-xl mx-auto">

@@ -1,7 +1,6 @@
-import { APP_API_BASEURL } from "@/lib/env";
 import { getAccessToken } from "@/lib/auth";
+import { apiFetch } from "@/lib/api";
 import { toast } from "react-toastify";
-import { redirect } from "react-router-dom";
 
 export const action = async ({ request, navigate }: any) => {
   const accessToken = getAccessToken();
@@ -21,23 +20,18 @@ export const action = async ({ request, navigate }: any) => {
     return;
   }
 
-  const response = await fetch(`${APP_API_BASEURL}/carts/items`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify({
-      productId,
-      quantity: Number(quantity),
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to add item to cart.");
+  try {
+    await apiFetch(`/carts/items`, {
+      method: "POST",
+      payload: {
+        productId,
+        quantity: Number(quantity),
+      },
+    });
+  } catch (error: Error | any) {
+    toast.error(error.message || "Failed to add item to cart!");
+    return;
   }
 
   toast.success("Item added to cart!");
-
-  return redirect("/cart");
 };

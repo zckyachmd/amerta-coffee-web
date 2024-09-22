@@ -62,18 +62,10 @@ const ProductDetail = () => {
     formData.append("productId", product.id);
     formData.append("quantity", quantity.toString());
 
-    const result = await action({
+    await action({
       request: new Request("", { method: "POST", body: formData }),
       navigate,
     });
-
-    if (result && typeof result === "object" && "errors" in result) {
-      toast.error("Failed to add product to cart", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-      return;
-    }
   };
 
   return (

@@ -1,11 +1,11 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FaCartPlus } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { getAccessToken } from "@/lib/auth";
-import { APP_API_BASEURL } from "@/lib/env";
+import { apiFetch } from "@/lib/api";
+import useAuth from "@/hooks/useAuth";
 
 interface ProductListProps {
   products: any;
@@ -13,40 +13,31 @@ interface ProductListProps {
 
 const ProductList: React.FC<ProductListProps> = ({ products }) => {
   const navigate = useNavigate();
+  const auth = useAuth();
 
   const handleCardClick = (slug: string) => {
     navigate(`/product/${slug}`);
   };
 
   const handleAddToCart = async (productId: string) => {
-    const accessToken = getAccessToken();
-
-    if (!accessToken) {
+    if (!auth.isLoggedIn) {
       toast.error("Please log in to add items to the cart.");
       navigate("/login");
       return;
     }
 
     try {
-      const response = await fetch(`${APP_API_BASEURL}/carts/items`, {
+      await apiFetch("/carts/items", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
+        payload: {
           productId,
           quantity: 1,
-        }),
+        },
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to add item to cart.");
-      }
-
       toast.success("Item added to cart!");
-    } catch {
-      toast.error("Failed to add item to cart.");
+    } catch (error: Error | any) {
+      toast.error(error.message || "Failed to add item to cart.");
     }
   };
 
