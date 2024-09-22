@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,7 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const { handleSubmit } = useForm<ProductFormInputs>();
 
-  const [quantity, setQuantity] = useState<number>(1);
+  const [quantity, setQuantity] = useState<number>(0);
   const [activeTab, setActiveTab] = useState<string>("description");
 
   const { product } = useLoaderData() as {
@@ -31,8 +31,13 @@ const ProductDetail = () => {
       image_url: string[];
       specifications: Record<string, string>;
       grinding: Record<string, string>;
+      isAvailable: boolean;
     };
   };
+
+  useEffect(() => {
+    setQuantity(product.stock_qty > 0 ? 1 : 0);
+  }, [product.stock_qty]);
 
   const handleIncreaseQuantity = () => {
     setQuantity((prev) => Math.min(prev + 1, product.stock_qty));
@@ -161,6 +166,7 @@ const ProductDetail = () => {
               <Button
                 className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded-full"
                 onClick={handleDecreaseQuantity}
+                disabled={!product.isAvailable || product.stock_qty === 0}
               >
                 -
               </Button>
@@ -170,10 +176,12 @@ const ProductDetail = () => {
                 onChange={handleQuantityChange}
                 className="input-no-spinner mx-4 text-xl w-24 text-center border border-gray-300 rounded"
                 min="1"
+                disabled={!product.isAvailable || product.stock_qty === 0}
               />
               <Button
                 className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded-full"
                 onClick={handleIncreaseQuantity}
+                disabled={!product.isAvailable || product.stock_qty === 0}
               >
                 +
               </Button>
@@ -182,6 +190,7 @@ const ProductDetail = () => {
             <Button
               className="bg-coffee text-white hover:bg-coffee-hover px-6 py-3 rounded-full w-full"
               onClick={handleSubmit(onSubmit)}
+              disabled={!product.isAvailable || product.stock_qty === 0}
             >
               <FaCartPlus className="mr-2" /> Add to Cart
             </Button>

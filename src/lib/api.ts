@@ -1,39 +1,44 @@
-import { getAccessToken, setAccessToken } from "@/lib/auth";
+import { getAccessToken, removeAccessToken, setAccessToken } from "@/lib/auth";
 import { APP_API_BASEURL } from "@/lib/env";
+import { jwtDecode } from "jwt-decode";
 
-async function refreshToken(): Promise<string> {
+const isTokenExpired = (token: string): boolean => {
+  try {
+    const { exp } = jwtDecode<{ exp: number }>(token);
+    return exp ? exp < Math.floor(Date.now() / 1000) : true;
+  } catch {
+    return true;
+  }
+};
+
+const refreshToken = async (): Promise<string> => {
   const response = await fetch(`${APP_API_BASEURL}/auth/refresh-token`, {
     method: "POST",
     credentials: "include",
   });
 
   if (!response.ok) {
-    throw new Response("Authentication failed!", {
-      status: response.status,
-      statusText: response.statusText,
-    });
+    removeAccessToken();
+    throw new Error("Authentication failed!");
   }
 
-  const {
-    data: { accessToken },
-  } = await response.json();
-  setAccessToken(accessToken);
-  return accessToken;
-}
+  const { token } = await response.json();
+  setAccessToken(token);
+  return token;
+};
 
-interface ApiFetchOptions {
-  method?: string;
-  payload?: any;
-}
-
-async function apiFetch(
+const apiFetch = async (
   endpoint: string,
-  options: ApiFetchOptions = {}
-): Promise<Response> {
+  options: { method?: string; payload?: any } = {}
+): Promise<Response> => {
+  const url = `${APP_API_BASEURL}${endpoint}`;
+  const { method = "GET", payload } = options;
+
   let accessToken = getAccessToken();
 
-  const url = new URL(`${APP_API_BASEURL}${endpoint}`);
-  const { method = "GET", payload } = options;
+  if (accessToken && isTokenExpired(accessToken)) {
+    accessToken = await refreshToken();
+  }
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",
@@ -47,25 +52,22 @@ async function apiFetch(
   };
 
   try {
-    const response = await fetch(url.toString(), fetchOptions);
+    let response = await fetch(url, fetchOptions);
 
     if (response.status === 401) {
       accessToken = await refreshToken();
       headers.Authorization = `Bearer ${accessToken}`;
 
-      return fetch(url.toString(), {
+      response = await fetch(url, {
         ...fetchOptions,
         headers,
       });
     }
 
     return response;
-  } catch (error: Response | any) {
-    throw new Response(error.message, {
-      status: error.status || 500,
-      statusText: error.statusText || "Internal Server Error",
-    });
+  } catch (error: Error | any) {
+    throw new Error(error.message || "Failed to fetch data!");
   }
-}
+};
 
 export { apiFetch };

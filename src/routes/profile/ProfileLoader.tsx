@@ -6,5 +6,5 @@ export const loader = async () => {
   });
 
   const data = await response.json();
-  return { user: data.data || null };
+  return { user: data.data || {} };
 };

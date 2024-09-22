@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { useLoaderData, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FaTrashAlt } from "react-icons/fa";
 import { apiFetch } from "@/lib/api";
 import { loader } from "./CartLoader";
+import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 
 interface Product {
@@ -32,39 +33,39 @@ const Cart: React.FC = () => {
 
   const fetchCartData = useCallback(async () => {
     try {
-      const response = await apiFetch("/carts", {
+      const response = await apiFetch("/cart", {
         method: "GET",
       });
 
       const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to fetch cart data.");
+      }
 
       setCartItems(data.data.cart.items);
       setTotalPrice(data.data.total);
     } catch (error: Error | any) {
-      throw new Response(error.message || "Failed to fetch cart items.", {
-        status: error.status,
-      });
+      toast.error(error.message);
     }
   }, []);
 
-  useEffect(() => {
-    fetchCartData();
-  }, [fetchCartData]);
-
   const handleQuantityChange = async (itemId: string, quantity: number) => {
     try {
-      await apiFetch(`/carts/items/${itemId}`, {
+      const response = await apiFetch(`/cart/item/${itemId}`, {
         method: "PATCH",
         payload: {
           quantity,
         },
       });
 
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to update quantity.");
+      }
+
       await fetchCartData();
     } catch (error: Error | any) {
-      throw new Response(error.message || "Failed to update quantity.", {
-        status: error.status,
-      });
+      toast.error(error.message);
     }
   };
 
@@ -80,15 +81,18 @@ const Cart: React.FC = () => {
 
     if (result.isConfirmed) {
       try {
-        await apiFetch(`/carts/items/${itemId}`, {
+        const response = await apiFetch(`/cart/item/${itemId}`, {
           method: "DELETE",
         });
 
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || "Failed to delete item.");
+        }
+
         await fetchCartData();
       } catch (error: Error | any) {
-        throw new Response(error.message || "Failed to remove item.", {
-          status: error.status,
-        });
+        toast.error(error.message);
       }
     }
   };

@@ -35,35 +35,23 @@ const Navbar = () => {
     });
 
     if (result.isConfirmed) {
-      try {
-        const response = await fetch(`${APP_API_BASEURL}/auth/logout`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        });
+      await fetch(`${APP_API_BASEURL}/auth/logout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
 
-        if (!response.ok) {
-          throw new Error("Logout failed!");
-        }
+      auth.logout();
 
-        auth.logout();
+      Swal.fire({
+        icon: "success",
+        title: "Logout Successful!",
+        text: "You have been logged out of your account!",
+        confirmButtonText: "OK!",
+        confirmButtonColor: "#986B54",
+      });
 
-        Swal.fire({
-          icon: "success",
-          title: "Logout Successful!",
-          text: "You have been logged out of your account!",
-          confirmButtonText: "OK!",
-          confirmButtonColor: "#986B54",
-        });
-
-        navigate("/login");
-      } catch (error: Error | any) {
-        Swal.fire({
-          icon: "error",
-          title: error.message,
-          text: "There was a problem logging you out. Please try again.",
-        });
-      }
+      navigate("/login");
     }
   };
 
@@ -74,10 +62,11 @@ const Navbar = () => {
       navigate(
         `/products?q=${encodeURIComponent(
           JSON.stringify({ name: searchQuery })
-        )}`
+        )}`,
+        { state: { fromSearch: true } }
       );
     } else {
-      navigate("/products");
+      navigate("/products", { state: { fromSearch: true } });
     }
   };
 

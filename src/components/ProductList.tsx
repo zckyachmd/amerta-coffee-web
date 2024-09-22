@@ -7,11 +7,7 @@ import { toast } from "react-toastify";
 import { apiFetch } from "@/lib/api";
 import useAuth from "@/hooks/useAuth";
 
-interface ProductListProps {
-  products: any;
-}
-
-const ProductList: React.FC<ProductListProps> = ({ products }) => {
+const ProductList: React.FC<any> = ({ products }) => {
   const navigate = useNavigate();
   const auth = useAuth();
 
@@ -27,7 +23,7 @@ const ProductList: React.FC<ProductListProps> = ({ products }) => {
     }
 
     try {
-      await apiFetch("/carts/items", {
+      const response = await apiFetch("/cart/item", {
         method: "POST",
         payload: {
           productId,
@@ -35,9 +31,14 @@ const ProductList: React.FC<ProductListProps> = ({ products }) => {
         },
       });
 
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to add item to cart.");
+      }
+
       toast.success("Item added to cart!");
     } catch (error: Error | any) {
-      toast.error(error.message || "Failed to add item to cart.");
+      toast.error(error.message);
     }
   };
 
@@ -49,45 +50,56 @@ const ProductList: React.FC<ProductListProps> = ({ products }) => {
         </p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-          {products.map((product: any) => (
-            <Card
-              key={product.id}
-              className="shadow-sm rounded-sm overflow-hidden border border-gray-300 cursor-pointer"
-              onClick={() => handleCardClick(product.slug)}
-            >
-              <CardContent className="p-0 flex flex-col">
-                <div className="w-full h-60">
-                  <img
-                    src={
-                      product.image_url[0] ||
-                      "https://placehold.co/150x150?text=No+Image"
-                    }
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="p-4 flex flex-col flex-grow">
-                  <h3 className="text-lg font-semibold overflow-hidden text-ellipsis whitespace-nowrap">
-                    {product.name}
-                  </h3>
-                  <p className="text-gray-700 mb-4">
-                    Rp {product.price.toLocaleString("id-ID")}
-                  </p>
-                  <div className="mt-auto">
-                    <Button
-                      className="w-full bg-coffee text-white hover:bg-coffee-hover py-2"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAddToCart(product.id);
-                      }}
-                    >
-                      <FaCartPlus className="w-6 h-6 mr-2" /> Add to Cart
-                    </Button>
+          {products.map((product: any) => {
+            const isOutOfStock =
+              !product.isAvailable || product.stock_qty === 0;
+
+            return (
+              <Card
+                key={product.id}
+                className="shadow-sm rounded-sm overflow-hidden border border-gray-300 cursor-pointer"
+                onClick={() => handleCardClick(product.slug)}
+              >
+                <CardContent className="p-0 flex flex-col">
+                  <div className="w-full h-60">
+                    <img
+                      src={
+                        product.image_url[0] ||
+                        "https://placehold.co/150x150?text=No+Image"
+                      }
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  <div className="p-4 flex flex-col flex-grow">
+                    <h3 className="text-lg font-semibold overflow-hidden text-ellipsis whitespace-nowrap">
+                      {product.name}
+                    </h3>
+                    <p className="text-gray-700 mb-4">
+                      Rp {product.price.toLocaleString("id-ID")}
+                    </p>
+                    <div className="mt-auto">
+                      <Button
+                        className={`w-full py-2 ${
+                          isOutOfStock
+                            ? "bg-gray-400 cursor-not-allowed"
+                            : "bg-coffee text-white hover:bg-coffee-hover"
+                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!isOutOfStock) handleAddToCart(product.id);
+                        }}
+                        disabled={isOutOfStock}
+                      >
+                        <FaCartPlus className="w-6 h-6 mr-2" />
+                        {isOutOfStock ? "Out of Stock" : "Add to Cart"}
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
     </>

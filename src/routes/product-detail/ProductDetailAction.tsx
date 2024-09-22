@@ -21,15 +21,20 @@ export const action = async ({ request, navigate }: any) => {
   }
 
   try {
-    await apiFetch(`/carts/items`, {
+    const response = await apiFetch(`/cart/item`, {
       method: "POST",
       payload: {
         productId,
         quantity: Number(quantity),
       },
     });
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error || "Failed to add item to cart.");
+    }
   } catch (error: Error | any) {
-    toast.error(error.message || "Failed to add item to cart!");
+    toast.error(error.message);
     return;
   }
 

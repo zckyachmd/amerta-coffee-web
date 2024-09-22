@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import { useLoaderData, useSearchParams } from "react-router-dom";
+import { useLoaderData, useSearchParams, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FaArrowRight } from "react-icons/fa";
 import ProductList from "@/components/ProductList";
 import { loader } from "./ProductsLoader";
 
 const Products = () => {
+  const location = useLocation();
   const { products, total } = useLoaderData() as Awaited<
     ReturnType<typeof loader>
   >;
@@ -38,6 +39,12 @@ const Products = () => {
     },
     [updateParams]
   );
+
+  useEffect(() => {
+    if (location.state?.fromSearch) {
+      window.scrollTo(0, 0);
+    }
+  }, [location]);
 
   useEffect(() => {
     if (isFirstLoad) {
