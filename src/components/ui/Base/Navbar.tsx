@@ -149,7 +149,7 @@ const Navbar = () => {
             </Link>
           )}
           <Link
-            to="/carts"
+            to={auth.isLoggedIn ? "/carts" : "/login"}
             className="flex items-center space-x-2 px-3 py-2 rounded"
           >
             <FaShoppingCart className="w-5 h-5 hover:text-gray-300" />
@@ -215,7 +215,7 @@ const Navbar = () => {
               </Link>
             )}
             <Link
-              to="/carts"
+              to={auth.isLoggedIn ? "/carts" : "/login"}
               className="flex items-center space-x-2 px-3 py-2 rounded text-white w-full"
             >
               <FaShoppingCart className="w-5 h-5 hover:text-gray-300" />

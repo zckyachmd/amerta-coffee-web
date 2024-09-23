@@ -2,7 +2,8 @@ import React, { useState, useCallback } from "react";
 import { useLoaderData, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FaTrashAlt } from "react-icons/fa";
+import { Badge } from "@/components/ui/badge";
+import { FaCreditCard, FaTrashAlt } from "react-icons/fa";
 import { apiFetch } from "@/lib/api";
 import { loader } from "./CartLoader";
 import { toast } from "react-toastify";
@@ -14,6 +15,8 @@ interface Product {
   price: number;
   image_url: string[];
   slug: string;
+  stock_qty: number;
+  isAvailable: boolean;
 }
 
 interface CartItem {
@@ -30,6 +33,7 @@ const Cart: React.FC = () => {
     cartData.data.cart.items
   );
   const [totalPrice, setTotalPrice] = useState<number>(cartData.data.total);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   const fetchCartData = useCallback(async () => {
     try {
@@ -97,6 +101,45 @@ const Cart: React.FC = () => {
     }
   };
 
+  const handleCheckout = async () => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Do you want to proceed with checkout?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#986B54",
+      confirmButtonText: "Yes, checkout",
+      cancelButtonText: "Cancel",
+    });
+
+    if (result.isConfirmed) {
+      setIsCheckingOut(true);
+      try {
+        const response = await apiFetch("/cart/checkout", {
+          method: "POST",
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || "Checkout failed.");
+        }
+
+        await fetchCartData();
+
+        Swal.fire({
+          title: "Checkout Successful!",
+          text: "Your order has been placed successfully.",
+          icon: "success",
+          confirmButtonColor: "#986B54",
+        });
+      } catch (error: Error | any) {
+        toast.error(error.message);
+      } finally {
+        setIsCheckingOut(false);
+      }
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto p-4">
       <h1 className="text-3xl font-bold mb-6 text-start">Your Cart</h1>
@@ -129,6 +172,14 @@ const Cart: React.FC = () => {
                     Rp {item.product.price.toLocaleString("id-ID")} x{" "}
                     {item.quantity}
                   </p>
+                  {item.product.stock_qty === 0 || !item.product.isAvailable ? (
+                    <Badge
+                      variant="outline"
+                      className="mt-2 inline-block text-xs py-1 px-2 w-max self-center md:self-start"
+                    >
+                      Out of Stock
+                    </Badge>
+                  ) : null}
                 </div>
                 <div className="flex flex-col items-center md:items-start md:ml-4">
                   <div className="flex items-center mb-2">
@@ -141,6 +192,10 @@ const Cart: React.FC = () => {
                           Math.max(item.quantity - 1, 1)
                         );
                       }}
+                      disabled={
+                        item.product.stock_qty === 0 ||
+                        !item.product.isAvailable
+                      }
                     >
                       -
                     </Button>
@@ -154,6 +209,10 @@ const Cart: React.FC = () => {
                         handleQuantityChange(item.id, newQuantity);
                       }}
                       onClick={(e) => e.stopPropagation()}
+                      disabled={
+                        item.product.stock_qty === 0 ||
+                        !item.product.isAvailable
+                      }
                     />
                     <Button
                       className="bg-gray-300 text-black hover:bg-gray-400 w-8 h-8 flex items-center justify-center rounded"
@@ -161,6 +220,10 @@ const Cart: React.FC = () => {
                         e.stopPropagation();
                         handleQuantityChange(item.id, item.quantity + 1);
                       }}
+                      disabled={
+                        item.product.stock_qty === 0 ||
+                        !item.product.isAvailable
+                      }
                     >
                       +
                     </Button>
@@ -178,8 +241,25 @@ const Cart: React.FC = () => {
               </CardContent>
             </Card>
           ))}
-          <div className="mt-6 text-lg font-semibold">
-            Total: Rp {totalPrice.toLocaleString("id-ID")}
+          <div className="grid grid-cols-1 gap-4">
+            <div className="flex justify-between items-center mt-6">
+              <div className="text-lg font-semibold">
+                Total: Rp {totalPrice.toLocaleString("id-ID")}
+              </div>
+              <Button
+                className="bg-blue-500 text-white hover:bg-blue-600 py-3 px-6"
+                onClick={handleCheckout}
+                disabled={isCheckingOut}
+              >
+                {isCheckingOut ? (
+                  "Processing..."
+                ) : (
+                  <>
+                    <FaCreditCard className="mr-2" /> Checkout
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       )}
