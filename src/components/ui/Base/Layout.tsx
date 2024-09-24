@@ -13,14 +13,7 @@ const Layout = () => {
         <div className="p-4">
           <div className="max-w-screen-xl mx-auto my-4">
             <Outlet />
-            <ScrollRestoration
-              getKey={(location) => {
-                const paths = ["/products"];
-                return paths.includes(location.pathname)
-                  ? location.pathname
-                  : location.key;
-              }}
-            />
+            <ScrollRestoration />
           </div>
         </div>
       </main>

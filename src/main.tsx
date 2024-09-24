@@ -30,7 +30,6 @@ const router = createBrowserRouter([
       {
         path: "/products",
         element: <ProductRoute.Products />,
-        loader: ProductRoute.ProductsLoader,
       },
       {
         path: "/product/:slug",
