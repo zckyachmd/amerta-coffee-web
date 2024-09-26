@@ -5,7 +5,9 @@ import * as auth from "@/lib/auth";
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(
+    !!auth.getAccessToken()
+  );
 
   useEffect(() => {
     const checkToken = () => {
@@ -14,6 +16,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     };
 
     checkToken();
+
     window.addEventListener("storage", checkToken);
 
     return () => {
