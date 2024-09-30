@@ -6,7 +6,8 @@ import { AuthProvider } from "@/context/AuthProvider";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import Layout from "@/components/ui/Base/Layout";
-import ErrorPage from "./components/ErrorPage";
+import ErrorPage from "@/components/ErrorPage";
+import AuthLoader from "@/components/AuthLoader";
 import * as HomeRoute from "@/routes/Home";
 import * as ProductRoute from "@/routes/Products";
 import * as ProductDetailRoute from "@/routes/ProductDetail";
@@ -40,13 +41,13 @@ const router = createBrowserRouter([
       {
         path: "/register",
         element: <RegisterRoute.Register />,
-        loader: RegisterRoute.loader,
+        loader: AuthLoader,
         action: RegisterRoute.action,
       },
       {
         path: "/login",
         element: <LoginRoute.Login />,
-        loader: LoginRoute.loader,
+        loader: AuthLoader,
         action: LoginRoute.action,
       },
       {

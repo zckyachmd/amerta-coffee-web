@@ -1,22 +1,12 @@
 import { useState } from "react";
-import { Form, Link, useNavigate, ActionFunctionArgs } from "react-router-dom";
+import { ActionFunctionArgs, Form, Link, useNavigate } from "react-router-dom";
 import { FaSpinner } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { getAccessToken } from "@/lib/auth";
 import { APP_API_BASEURL } from "@/lib/env";
-
-export const loader = async () => {
-  const token = getAccessToken();
-
-  if (token) {
-    throw new Response(null, { status: 302, headers: { Location: "/" } });
-  }
-
-  return null;
-};
+import * as auth from "@/lib/auth";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const data = await request.formData();
@@ -52,9 +42,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return await handleErrorResponse(response);
     }
 
-    const { token } = await response.json();
-    return token
-      ? token
+    const {
+      token: { accessToken, refreshToken },
+    } = await response.json();
+
+    return accessToken && refreshToken
+      ? { accessToken, refreshToken }
       : { errors: { global: "Login failed. Please try again." } };
   } catch (error) {
     return {
@@ -71,26 +64,25 @@ export const Login: React.FC = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const auth = useAuth();
+  const authContext = useAuth();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     setErrors({});
     setIsLoading(true);
 
-    const formData = new FormData(e.currentTarget);
-
     const result = await action({
-      request: new Request("", { method: "POST", body: formData }),
+      request: new Request("", {
+        method: "POST",
+        body: new FormData(e.currentTarget),
+      }),
       params: {},
     });
 
     setIsLoading(false);
 
-    if (typeof result === "object" && "errors" in result) {
+    if ("errors" in result) {
       setErrors(result.errors);
-
       if (result.errors.global) {
         toast.error(result.errors.global, {
           position: "top-right",
@@ -100,16 +92,25 @@ export const Login: React.FC = () => {
       return;
     }
 
-    if (typeof result === "string") {
-      auth.login(result);
-
-      toast.success("Login successful!", {
+    const { accessToken, refreshToken } = result;
+    if (!accessToken || !refreshToken) {
+      toast.error("Login failed. Please try again.", {
         position: "top-right",
         autoClose: 3000,
       });
-
-      navigate("/profile");
+      return;
     }
+
+    auth.setAccessToken(accessToken);
+    auth.setRefreshToken(refreshToken);
+
+    authContext.login(accessToken, refreshToken);
+
+    toast.success("Login successful!", {
+      position: "top-right",
+      autoClose: 3000,
+    });
+    navigate("/profile");
   };
 
   return (
@@ -130,7 +131,7 @@ export const Login: React.FC = () => {
               name="email"
               className="w-full"
               placeholder="Enter your email"
-              required={true}
+              required
             />
             {errors.email && (
               <p className="text-red-500 text-sm mt-1">{errors.email}</p>
@@ -147,7 +148,7 @@ export const Login: React.FC = () => {
               name="password"
               className="w-full"
               placeholder="Enter your password"
-              required={true}
+              required
             />
             {errors.password && (
               <p className="text-red-500 text-sm mt-1">{errors.password}</p>

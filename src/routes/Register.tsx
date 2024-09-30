@@ -4,18 +4,7 @@ import { FaSpinner } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { getAccessToken } from "@/lib/auth";
 import { APP_API_BASEURL } from "@/lib/env";
-
-export const loader = async () => {
-  const token = getAccessToken();
-
-  if (token) {
-    throw new Response(null, { status: 302, headers: { Location: "/" } });
-  }
-
-  return null;
-};
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const data = await request.formData();

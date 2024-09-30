@@ -1,33 +1,35 @@
-import { getAccessToken, removeAccessToken, setAccessToken } from "@/lib/auth";
+import {
+  getAccessToken,
+  isTokenExpired,
+  refreshAccessToken,
+  setAccessToken,
+} from "@/lib/auth";
 import { APP_API_BASEURL } from "@/lib/env";
-import { jwtDecode } from "jwt-decode";
 
-const isTokenExpired = (token: string): boolean => {
-  try {
-    const { exp } = jwtDecode<{ exp: number }>(token);
-    return exp ? exp < Math.floor(Date.now() / 1000) : true;
-  } catch {
-    return true;
-  }
-};
+const handleRequest = async (
+  requestFunc: () => Promise<Response>
+): Promise<Response> => {
+  let accessToken = getAccessToken();
 
-const refreshToken = async (): Promise<string> => {
-  try {
-    const response = await fetch(`${APP_API_BASEURL}/auth/refresh-token`, {
-      method: "POST",
-      credentials: "include",
-    });
+  if (!accessToken || isTokenExpired(accessToken)) {
+    const newAccessToken = await refreshAccessToken();
 
-    if (!response.ok) {
-      removeAccessToken();
-      throw new Response("Authentication failed!");
+    if (!newAccessToken) {
+      throw new Error("Unable to refresh access token");
     }
 
-    const { token } = await response.json();
-    setAccessToken(token);
-    return token;
+    accessToken = newAccessToken;
+    setAccessToken(accessToken);
+  }
+
+  try {
+    const response = await requestFunc();
+    if (!response.ok) {
+      throw new Error("Request failed: " + response.statusText);
+    }
+    return response;
   } catch (error: Error | any) {
-    throw new Response(error.message || "Failed to refresh token!");
+    throw new Error(error.message || "Failed to fetch data!");
   }
 };
 
@@ -38,40 +40,19 @@ const apiFetch = async (
   const url = `${APP_API_BASEURL}${endpoint}`;
   const { method = "GET", payload } = options;
 
-  let accessToken = getAccessToken();
+  return handleRequest(async () => {
+    const token = getAccessToken();
+    const fetchOptions: RequestInit = {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: payload ? JSON.stringify(payload) : undefined,
+    };
 
-  if (accessToken && isTokenExpired(accessToken)) {
-    accessToken = await refreshToken();
-  }
-
-  const headers: HeadersInit = {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${accessToken}`,
-  };
-
-  const fetchOptions: RequestInit = {
-    method,
-    headers,
-    body: payload ? JSON.stringify(payload) : undefined,
-  };
-
-  try {
-    let response = await fetch(url, fetchOptions);
-
-    if (response.status === 401) {
-      accessToken = await refreshToken();
-      headers.Authorization = `Bearer ${accessToken}`;
-
-      response = await fetch(url, {
-        ...fetchOptions,
-        headers,
-      });
-    }
-
-    return response;
-  } catch (error: Error | any) {
-    throw new Response(error.message || "Failed to fetch data!");
-  }
+    return fetch(url, fetchOptions);
+  });
 };
 
 export { apiFetch };

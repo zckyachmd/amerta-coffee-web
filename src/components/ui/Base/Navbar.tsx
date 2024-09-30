@@ -12,7 +12,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { APP_API_BASEURL } from "@/lib/env";
 import { useAuth } from "@/hooks/useAuth";
 import Swal from "sweetalert2";
 
@@ -35,12 +34,6 @@ const Navbar = () => {
     });
 
     if (result.isConfirmed) {
-      await fetch(`${APP_API_BASEURL}/auth/logout`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      });
-
       auth.logout();
 
       Swal.fire({
@@ -59,12 +52,9 @@ const Navbar = () => {
     e.preventDefault();
 
     if (searchQuery.trim()) {
-      navigate(
-        `/products?q=${encodeURIComponent(
-          JSON.stringify({ name: searchQuery })
-        )}`,
-        { state: { fromSearch: true } }
-      );
+      navigate(`/products?q=${encodeURIComponent(searchQuery)}`, {
+        state: { fromSearch: true },
+      });
     } else {
       navigate("/products", { state: { fromSearch: true } });
     }

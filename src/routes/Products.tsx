@@ -20,7 +20,7 @@ export const loader = async ({ request }: { request: Request }) => {
   const params = new URLSearchParams({
     page: page.toString(),
     limit: LIMIT.toString(),
-    q: qParam,
+    q: JSON.stringify({ name: qParam }),
     s: JSON.stringify(sortObject),
   });
 
