@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { FaCartPlus } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { apiFetch } from "@/lib/api";
-import useAuth from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 
 const ProductList: React.FC<any> = ({ products }) => {
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ const ProductList: React.FC<any> = ({ products }) => {
     }
 
     try {
-      const response = await apiFetch("/cart/item", {
+      await apiFetch("/cart/item", {
         method: "POST",
         payload: {
           productId,
@@ -31,14 +31,9 @@ const ProductList: React.FC<any> = ({ products }) => {
         },
       });
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to add item to cart.");
-      }
-
       toast.success("Item added to cart!");
     } catch (error: Error | any) {
-      toast.error(error.message);
+      toast.error(error.message || "Failed to add item to cart.");
     }
   };
 

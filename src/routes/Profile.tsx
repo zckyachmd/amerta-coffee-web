@@ -1,4 +1,4 @@
-import { useLoaderData } from "react-router-dom";
+import { redirect, useLoaderData } from "react-router-dom";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import {
   Card,
@@ -6,12 +6,27 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import { loader } from "./ProfileLoader";
 import { Button } from "@/components/ui/button";
 import { FaHistory } from "react-icons/fa";
+import { apiFetch } from "@/lib/api";
 
-const Profile = () => {
-  const { user } = useLoaderData() as Awaited<ReturnType<typeof loader>>;
+export const loader = async () => {
+  try {
+    const response = await apiFetch("/auth/me");
+
+    if (!response.ok) {
+      throw new Error(response.statusText || "Failed to fetch user!");
+    }
+
+    const { data } = await response.json();
+    return data || {};
+  } catch {
+    return redirect("/login");
+  }
+};
+
+export const Profile: React.FC = () => {
+  const user = useLoaderData() as Awaited<ReturnType<typeof loader>>;
 
   return (
     <div className="flex flex-col items-center py-20 max-w-xl mx-auto">
@@ -61,5 +76,3 @@ const Profile = () => {
     </div>
   );
 };
-
-export default Profile;

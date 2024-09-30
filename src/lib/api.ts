@@ -12,11 +12,6 @@ const isTokenExpired = (token: string): boolean => {
 };
 
 const refreshToken = async (): Promise<string> => {
-  const removeRefreshTokenCookie = () => {
-    document.cookie =
-      "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-  };
-
   try {
     const response = await fetch(`${APP_API_BASEURL}/auth/refresh-token`, {
       method: "POST",
@@ -25,18 +20,14 @@ const refreshToken = async (): Promise<string> => {
 
     if (!response.ok) {
       removeAccessToken();
-      removeRefreshTokenCookie();
-      throw new Error("Authentication failed!");
+      throw new Response("Authentication failed!");
     }
 
     const { token } = await response.json();
     setAccessToken(token);
     return token;
-  } catch (error) {
-    removeRefreshTokenCookie();
-    throw new Error(
-      error instanceof Error ? error.message : "Failed to refresh token"
-    );
+  } catch (error: Error | any) {
+    throw new Response(error.message || "Failed to refresh token!");
   }
 };
 
@@ -79,7 +70,7 @@ const apiFetch = async (
 
     return response;
   } catch (error: Error | any) {
-    throw new Error(error.message || "Failed to fetch data!");
+    throw new Response(error.message || "Failed to fetch data!");
   }
 };
 

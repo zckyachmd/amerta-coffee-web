@@ -19,7 +19,7 @@ interface ShareButtonProps {
   url: string;
 }
 
-const ShareButton: React.FC<ShareButtonProps> = ({ url }) => {
+const ShareButton: React.FC<ShareButtonProps> = ({ url }: ShareButtonProps) => {
   const handleShare = (shareUrl: string) => {
     window.open(shareUrl, "_blank", "noopener,noreferrer");
   };

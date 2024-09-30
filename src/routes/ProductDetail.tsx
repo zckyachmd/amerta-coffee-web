@@ -1,43 +1,76 @@
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useState } from "react";
+import { Form, redirect, useLoaderData } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sliders } from "@/components/ui/sliders";
 import ShareButton from "@/components/ShareButton";
 import { FaCartPlus } from "react-icons/fa";
 import { toast } from "react-toastify";
-import { action } from "./ProductDetailAction";
-import { useLoaderData, useNavigate } from "react-router-dom";
+import { getAccessToken } from "@/lib/auth";
+import { apiFetch } from "@/lib/api";
+import { APP_API_BASEURL } from "@/lib/env";
+import { LoaderFunctionArgs } from "react-router-dom";
 
-type ProductFormInputs = {
-  quantity: number;
+export const loader = async ({ params }: LoaderFunctionArgs) => {
+  const slug = params.slug as string;
+  const response = await fetch(`${APP_API_BASEURL}/products/${slug}`);
+
+  if (!response.ok) {
+    throw new Response("Failed to fetch product", {
+      status: 404,
+      statusText: "Product not found",
+    });
+  }
+
+  const data = await response.json();
+  return { product: data.data };
 };
 
-const ProductDetail = () => {
-  const navigate = useNavigate();
-  const { handleSubmit } = useForm<ProductFormInputs>();
+export const action = async ({ request }: any) => {
+  const accessToken = getAccessToken();
 
-  const [quantity, setQuantity] = useState<number>(0);
+  if (!accessToken) {
+    toast.error("Please log in to add items to the cart.");
+    return redirect("/login");
+  }
+
+  const formData = await request.formData();
+  const productId = formData.get("productId");
+  const quantity = Number(formData.get("quantity")) || 1;
+
+  if (!productId) {
+    toast.error("Product ID is required");
+    return;
+  }
+
+  try {
+    const response = await apiFetch(`/cart/item`, {
+      method: "POST",
+      payload: {
+        productId,
+        quantity,
+      },
+    });
+
+    if (response.ok) {
+      toast.success("Item added to cart!");
+      return redirect("/carts");
+    }
+
+    const { error } = await response.json();
+    throw new Error(error || "Failed to add item to cart.");
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+export const ProductDetail = () => {
+  const { product } = useLoaderData() as Awaited<ReturnType<typeof loader>>;
+
+  const [quantity, setQuantity] = useState<number>(
+    product.isAvailable && product.stock_qty > 0 ? 1 : 0
+  );
   const [activeTab, setActiveTab] = useState<string>("description");
-
-  const { product } = useLoaderData() as {
-    product: {
-      id: string;
-      name: string;
-      price: number;
-      stock_qty: number;
-      sku: string;
-      description: string;
-      image_url: string[];
-      specifications: Record<string, string>;
-      grinding: Record<string, string>;
-      isAvailable: boolean;
-    };
-  };
-
-  useEffect(() => {
-    setQuantity(product.stock_qty > 0 ? 1 : 0);
-  }, [product.stock_qty]);
 
   const handleIncreaseQuantity = () => {
     setQuantity((prev) => Math.min(prev + 1, product.stock_qty));
@@ -54,31 +87,14 @@ const ProductDetail = () => {
     }
   };
 
-  const onSubmit = async () => {
-    if (quantity <= 0) {
-      toast.error("Quantity is required", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("productId", product.id);
-    formData.append("quantity", quantity.toString());
-
-    await action({
-      request: new Request("", { method: "POST", body: formData }),
-      navigate,
-    });
-  };
-
   return (
     <div className="container mx-auto py-8">
       <div className="flex flex-col md:flex-row gap-8">
         <div className="md:w-1/2 rounded-lg overflow-hidden">
           <Sliders
-            imageSlides={product.image_url.map((url) => ({ imageUrl: url }))}
+            imageSlides={product.image_url.map((url: string) => ({
+              imageUrl: url,
+            }))}
             autoplayDelay={5000}
           />
         </div>
@@ -135,7 +151,7 @@ const ProductDetail = () => {
                         <strong>
                           {key.charAt(0).toUpperCase() + key.slice(1)}:
                         </strong>{" "}
-                        {value}
+                        {value as React.ReactNode}
                       </li>
                     )
                   )}
@@ -152,7 +168,7 @@ const ProductDetail = () => {
                             .replace(/^\w/, (c) => c.toUpperCase())}
                           :
                         </strong>{" "}
-                        {value}
+                        {value as React.ReactNode}
                       </li>
                     ))}
                   </ul>
@@ -187,18 +203,20 @@ const ProductDetail = () => {
               </Button>
             </div>
 
-            <Button
-              className="bg-coffee text-white hover:bg-coffee-hover px-6 py-3 rounded-full w-full"
-              onClick={handleSubmit(onSubmit)}
-              disabled={!product.isAvailable || product.stock_qty === 0}
-            >
-              <FaCartPlus className="mr-2" /> Add to Cart
-            </Button>
+            <Form method="post">
+              <input type="hidden" name="productId" value={product.id} />
+              <input type="hidden" name="quantity" value={quantity} />
+              <Button
+                type="submit"
+                className="bg-coffee text-white hover:bg-coffee-hover px-6 py-3 rounded-full w-full"
+                disabled={!product.isAvailable || product.stock_qty === 0}
+              >
+                <FaCartPlus className="mr-2" /> Add to Cart
+              </Button>
+            </Form>
           </div>
         </div>
       </div>
     </div>
   );
 };
-
-export default ProductDetail;

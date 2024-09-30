@@ -6,66 +6,59 @@ import { AuthProvider } from "@/context/AuthProvider";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import Layout from "@/components/ui/Base/Layout";
-import ProtectedRoute from "./routes/ProtectedRoute";
-import ServerError from "./components/ServerError";
-import HomeRoute from "@/routes/home/index";
-import RegisterRoute from "@/routes/register/index";
-import LoginRouter from "@/routes/login/index";
-import ProfileRoute from "@/routes/profile/index";
-import ProductRoute from "@/routes/products/index";
-import ProductDetailRoute from "@/routes/product-detail/index";
-import CartRoute from "@/routes/cart/index";
+import ErrorPage from "./components/ErrorPage";
+import * as HomeRoute from "@/routes/Home";
+import * as ProductRoute from "@/routes/Products";
+import * as ProductDetailRoute from "@/routes/ProductDetail";
+import * as RegisterRoute from "@/routes/Register";
+import * as LoginRoute from "@/routes/Login";
+import * as CartRoute from "@/routes/Cart";
+import * as ProfileRoute from "@/routes/Profile";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
-    errorElement: <ServerError />,
+    errorElement: <ErrorPage />,
     children: [
       {
         path: "/",
         element: <HomeRoute.Home />,
-        loader: HomeRoute.HomeLoader,
+        loader: HomeRoute.loader,
       },
       {
         path: "/products",
         element: <ProductRoute.Products />,
+        loader: ProductRoute.loader,
       },
       {
         path: "/product/:slug",
         element: <ProductDetailRoute.ProductDetail />,
-        loader: ProductDetailRoute.ProductLoader,
-        action: ProductDetailRoute.ProductDetailAction,
+        loader: ProductDetailRoute.loader,
+        action: ProductDetailRoute.action,
       },
       {
         path: "/register",
         element: <RegisterRoute.Register />,
-        loader: RegisterRoute.RegisterLoader,
-        action: RegisterRoute.RegisterAction,
+        loader: RegisterRoute.loader,
+        action: RegisterRoute.action,
       },
       {
         path: "/login",
-        element: <LoginRouter.Login />,
-        loader: LoginRouter.LoginLoader,
-        action: LoginRouter.LoginAction,
+        element: <LoginRoute.Login />,
+        loader: LoginRoute.loader,
+        action: LoginRoute.action,
       },
       {
         path: "/carts",
-        element: (
-          <ProtectedRoute>
-            <CartRoute.Cart />
-          </ProtectedRoute>
-        ),
-        loader: CartRoute.CartLoader,
+        element: <CartRoute.Cart />,
+        loader: CartRoute.loader,
+        action: CartRoute.action,
       },
       {
         path: "/profile",
-        element: (
-          <ProtectedRoute>
-            <ProfileRoute.Profile />
-          </ProtectedRoute>
-        ),
-        loader: ProfileRoute.ProfileLoader,
+        element: <ProfileRoute.Profile />,
+        loader: ProfileRoute.loader,
       },
     ],
   },

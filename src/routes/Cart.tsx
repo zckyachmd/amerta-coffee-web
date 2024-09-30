@@ -1,103 +1,130 @@
-import React, { useState, useCallback } from "react";
-import { useLoaderData, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import {
+  ActionFunctionArgs,
+  redirect,
+  useLoaderData,
+  useNavigate,
+} from "react-router-dom";
+import { toast } from "react-toastify";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FaCreditCard, FaTrashAlt } from "react-icons/fa";
+import { FaCreditCard, FaSpinner, FaTrashAlt } from "react-icons/fa";
 import { apiFetch } from "@/lib/api";
-import { loader } from "./CartLoader";
-import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  image_url: string[];
-  slug: string;
-  stock_qty: number;
-  isAvailable: boolean;
-}
+export const loader = async () => {
+  try {
+    const response = await apiFetch("/cart");
 
-interface CartItem {
-  id: string;
-  productId: string;
-  quantity: number;
-  product: Product;
-}
+    if (!response.ok) {
+      throw new Error(response.statusText || "Failed to fetch cart!");
+    }
 
-const Cart: React.FC = () => {
+    const { data } = await response.json();
+
+    return data || {};
+  } catch {
+    return redirect("/login");
+  }
+};
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const formData = await request.formData();
+  const actionType = formData.get("actionType");
+  const itemId = formData.get("itemId");
+
+  try {
+    switch (actionType) {
+      case "updateQuantity": {
+        const quantity = formData.get("quantity");
+        const updateResponse = await apiFetch(`/cart/item/${itemId}`, {
+          method: "PATCH",
+          payload: {
+            quantity: Number(quantity),
+          },
+        });
+
+        if (!updateResponse.ok) {
+          throw new Error("Failed to update quantity.");
+        }
+
+        return { status: 200 };
+      }
+
+      case "remove": {
+        const deleteResponse = await apiFetch(`/cart/item/${itemId}`, {
+          method: "DELETE",
+        });
+
+        if (!deleteResponse.ok) {
+          throw new Error("Failed to delete item.");
+        }
+
+        return { status: 200 };
+      }
+
+      case "checkout": {
+        const checkoutResponse = await apiFetch("/cart/checkout", {
+          method: "POST",
+        });
+
+        if (!checkoutResponse.ok) {
+          throw new Error("Checkout failed.");
+        }
+
+        return { status: 200 };
+      }
+
+      default:
+        throw new Error("Unknown action type.");
+    }
+  } catch (error: Error | any) {
+    toast.error(
+      error.message || "Oops! Something went wrong. Please try again."
+    );
+    return { status: 500 };
+  }
+};
+
+export const Cart: React.FC = () => {
   const navigate = useNavigate();
-  const cartData = useLoaderData() as Awaited<ReturnType<typeof loader>>;
-  const [cartItems, setCartItems] = useState<CartItem[]>(
-    cartData.data.cart.items
-  );
-  const [totalPrice, setTotalPrice] = useState<number>(cartData.data.total);
+  const carts = useLoaderData() as Awaited<ReturnType<typeof loader>>;
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
-  const fetchCartData = useCallback(async () => {
-    try {
-      const response = await apiFetch("/cart", {
-        method: "GET",
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to fetch cart data.");
-      }
-
-      setCartItems(data.data.cart.items);
-      setTotalPrice(data.data.total);
-    } catch (error: Error | any) {
-      toast.error(error.message);
-    }
-  }, []);
-
   const handleQuantityChange = async (itemId: string, quantity: number) => {
-    try {
-      const response = await apiFetch(`/cart/item/${itemId}`, {
-        method: "PATCH",
-        payload: {
-          quantity,
-        },
-      });
+    const formData = new FormData();
+    formData.append("actionType", "updateQuantity");
+    formData.append("itemId", itemId);
+    formData.append("quantity", quantity.toString());
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to update quantity.");
-      }
+    const response = await action({
+      request: new Request("", {
+        method: "POST",
+        body: formData,
+      }),
+      params: {},
+    });
 
-      await fetchCartData();
-    } catch (error: Error | any) {
-      toast.error(error.message);
+    if (response.status === 200) {
+      toast.success("Quantity updated successfully.");
+      navigate(`/carts`, { replace: true });
     }
   };
 
   const handleRemoveItem = async (itemId: string) => {
-    const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "You won't be able to revert this!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!",
+    const formData = new FormData();
+    formData.append("actionType", "remove");
+    formData.append("itemId", itemId);
+
+    const response = await action({
+      request: new Request("", { method: "POST", body: formData }),
+      params: {},
     });
 
-    if (result.isConfirmed) {
-      try {
-        const response = await apiFetch(`/cart/item/${itemId}`, {
-          method: "DELETE",
-        });
-
-        if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.error || "Failed to delete item.");
-        }
-
-        await fetchCartData();
-      } catch (error: Error | any) {
-        toast.error(error.message);
-      }
+    if (response.status === 200) {
+      toast.success("Item deleted successfully.");
+      navigate(`/carts`, { replace: true });
     }
   };
 
@@ -114,48 +141,42 @@ const Cart: React.FC = () => {
 
     if (result.isConfirmed) {
       setIsCheckingOut(true);
-      try {
-        const response = await apiFetch("/cart/checkout", {
-          method: "POST",
-        });
 
-        if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.error || "Checkout failed.");
-        }
+      const formData = new FormData();
+      formData.append("actionType", "checkout");
 
-        await fetchCartData();
+      const response = await action({
+        request: new Request("", { method: "POST", body: formData }),
+        params: {},
+      });
 
-        Swal.fire({
-          title: "Checkout Successful!",
-          text: "Your order has been placed successfully.",
-          icon: "success",
-          confirmButtonColor: "#986B54",
-        });
-      } catch (error: Error | any) {
-        toast.error(error.message);
-      } finally {
-        setIsCheckingOut(false);
+      if (response.status === 200) {
+        toast.success("Checkout successful!");
+        navigate(`/carts`, { replace: true });
       }
+
+      setIsCheckingOut(false);
     }
   };
 
   return (
     <div className="max-w-6xl mx-auto p-4">
       <h1 className="text-3xl font-bold mb-6 text-start">Your Cart</h1>
-      {cartItems.length === 0 ? (
+      {carts.cart.items.length === 0 ? (
         <p className="text-xl font-semibold text-gray-600 text-center py-40">
           No items in the cart.
         </p>
       ) : (
         <div className="grid grid-cols-1 gap-4">
-          {cartItems.map((item) => (
+          {carts.cart.items.map((item: any) => (
             <Card key={item.id} className="shadow-lg border rounded-lg">
               <CardContent className="flex flex-col md:flex-row md:items-center w-full p-4">
                 <img
                   src={
                     item.product.image_url[0] ||
-                    "https://placehold.co/150x150?text=No+Image"
+                    `https://placehold.co/150x150?text=${encodeURIComponent(
+                      item.product.name
+                    )}`
                   }
                   alt={item.product.name}
                   className="w-32 h-32 object-cover rounded-md mb-4 md:mb-0 md:mr-4 cursor-pointer mx-auto md:mx-0"
@@ -230,10 +251,7 @@ const Cart: React.FC = () => {
                   </div>
                   <Button
                     className="bg-red-500 text-white hover:bg-red-600 w-full md:w-32 py-2 mt-4 md:mt-0"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRemoveItem(item.id);
-                    }}
+                    onClick={() => handleRemoveItem(item.id)}
                   >
                     <FaTrashAlt className="mr-1" /> Remove
                   </Button>
@@ -244,7 +262,7 @@ const Cart: React.FC = () => {
           <div className="grid grid-cols-1 gap-4">
             <div className="flex justify-between items-center mt-6">
               <div className="text-lg font-semibold">
-                Total: Rp {totalPrice.toLocaleString("id-ID")}
+                Total: Rp {carts.total.toLocaleString("id-ID")}
               </div>
               <Button
                 className="bg-blue-500 text-white hover:bg-blue-600 py-3 px-6"
@@ -252,7 +270,10 @@ const Cart: React.FC = () => {
                 disabled={isCheckingOut}
               >
                 {isCheckingOut ? (
-                  "Processing..."
+                  <>
+                    <FaSpinner className="animate-spin mr-2" />
+                    Processing...
+                  </>
                 ) : (
                   <>
                     <FaCreditCard className="mr-2" /> Checkout
@@ -266,5 +287,3 @@ const Cart: React.FC = () => {
     </div>
   );
 };
-
-export default Cart;

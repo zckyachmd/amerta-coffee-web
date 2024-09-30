@@ -1,61 +1,109 @@
-import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate, Form, ActionFunctionArgs } from "react-router-dom";
+import { FaSpinner } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { action } from "./RegisterAction";
+import { getAccessToken } from "@/lib/auth";
+import { APP_API_BASEURL } from "@/lib/env";
 
-type RegisterFormInputs = {
-  name: string;
-  email: string;
-  password: string;
-  address: string;
-  phone: string;
-  confirmPassword: string;
+export const loader = async () => {
+  const token = getAccessToken();
+
+  if (token) {
+    throw new Response(null, { status: 302, headers: { Location: "/" } });
+  }
+
+  return null;
 };
 
-const Register = () => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setError,
-  } = useForm<RegisterFormInputs>();
-  const navigate = useNavigate();
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const data = await request.formData();
+  const name = data.get("name") as string;
+  const email = data.get("email") as string;
+  const password = data.get("password") as string;
+  const confirmPassword = data.get("confirmPassword") as string;
+  const address = data.get("address") as string;
+  const phone = data.get("phone") as string;
 
-  const onSubmit = async (data: RegisterFormInputs) => {
-    if (data.password !== data.confirmPassword) {
-      setError("confirmPassword", { message: "Passwords do not match" });
-      return;
+  const handleErrorResponse = async (response: Response) => {
+    const errorResponse = await response.json();
+    const errors: Record<string, string> = {};
+
+    if (errorResponse.error?.issues) {
+      errorResponse.error.issues.forEach(
+        ({ message, path }: { message: string; path: string[] }) => {
+          errors[path[0]] = message;
+        }
+      );
+    } else {
+      errors.global =
+        errorResponse.error?.toString() || "Login failed. Please try again.";
     }
 
-    const formData = new FormData();
-    formData.append("name", data.name);
-    formData.append("email", data.email);
-    formData.append("password", data.password);
-    formData.append("confirmPassword", data.confirmPassword);
-    formData.append("address", data.address);
-    formData.append("phone", data.phone);
+    return { errors };
+  };
+
+  try {
+    const response = await fetch(`${APP_API_BASEURL}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+        email,
+        password,
+        confirmPassword,
+        address,
+        phone,
+      }),
+    });
+
+    if (!response.ok) {
+      return await handleErrorResponse(response);
+    }
+
+    return true;
+  } catch (error) {
+    return {
+      errors: {
+        global:
+          error instanceof Error
+            ? error.message
+            : "Oops! Something went wrong. Please try again.",
+      },
+    };
+  }
+};
+
+export const Register = () => {
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    setErrors({});
+    setIsLoading(true);
+
+    const formData = new FormData(e.currentTarget);
 
     const result = await action({
       request: new Request("", { method: "POST", body: formData }),
       params: {},
     });
 
+    setIsLoading(false);
+
     if (typeof result === "object" && "errors" in result) {
+      setErrors(result.errors);
+
       if (result.errors.global) {
         toast.error(result.errors.global, {
           position: "top-right",
           autoClose: 3000,
         });
-        return;
       }
-
-      Object.entries(result.errors).forEach(([field, message]) => {
-        if (field !== "global") {
-          setError(field as keyof RegisterFormInputs, { message });
-        }
-      });
       return;
     }
 
@@ -72,7 +120,7 @@ const Register = () => {
         <h2 className="text-3xl font-bold text-center mb-6 text-coffee">
           Create Your Account
         </h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <Form method="post" onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label htmlFor="name" className="block text-sm font-medium">
               Name <span className="text-red-500">*</span>
@@ -80,12 +128,13 @@ const Register = () => {
             <Input
               type="text"
               id="name"
+              name="name"
               placeholder="Enter your name"
-              {...register("name", { required: "Name is required" })}
               className="w-full border-2 border-gray-300 rounded-md p-2"
+              required={true}
             />
             {errors.name && (
-              <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+              <p className="text-red-500 text-xs mt-1">{errors.name}</p>
             )}
           </div>
 
@@ -96,14 +145,13 @@ const Register = () => {
             <Input
               type="email"
               id="email"
+              name="email"
               placeholder="Enter your email"
-              {...register("email", { required: "Email is required" })}
               className="w-full border-2 border-gray-300 rounded-md p-2"
+              required={true}
             />
             {errors.email && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.email.message}
-              </p>
+              <p className="text-red-500 text-xs mt-1">{errors.email}</p>
             )}
           </div>
 
@@ -114,14 +162,13 @@ const Register = () => {
             <Input
               type="password"
               id="password"
+              name="password"
               placeholder="Enter your password"
-              {...register("password", { required: "Password is required" })}
               className="w-full border-2 border-gray-300 rounded-md p-2"
+              required={true}
             />
             {errors.password && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.password.message}
-              </p>
+              <p className="text-red-500 text-xs mt-1">{errors.password}</p>
             )}
           </div>
 
@@ -135,15 +182,14 @@ const Register = () => {
             <Input
               type="password"
               id="confirmPassword"
+              name="confirmPassword"
               placeholder="Confirm your password"
-              {...register("confirmPassword", {
-                required: "Please confirm your password",
-              })}
               className="w-full border-2 border-gray-300 rounded-md p-2"
+              required={true}
             />
             {errors.confirmPassword && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.confirmPassword.message}
+              <p className="text-red-500 text-xs mt-1">
+                {errors.confirmPassword}
               </p>
             )}
           </div>
@@ -155,10 +201,13 @@ const Register = () => {
             <Input
               type="text"
               id="address"
+              name="address"
               placeholder="Enter your address"
-              {...register("address")}
               className="w-full border-2 border-gray-300 rounded-md p-2"
             />
+            {errors.address && (
+              <p className="text-red-500 text-xs mt-1">{errors.address}</p>
+            )}
           </div>
 
           <div>
@@ -168,10 +217,13 @@ const Register = () => {
             <Input
               type="text"
               id="phone"
+              name="phone"
               placeholder="Enter your phone number"
-              {...register("phone")}
               className="w-full border-2 border-gray-300 rounded-md p-2"
             />
+            {errors.phone && (
+              <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
+            )}
           </div>
 
           <div className="text-sm">
@@ -182,9 +234,16 @@ const Register = () => {
             type="submit"
             className="w-full bg-coffee text-white hover:bg-coffee-hover py-2 rounded-md"
           >
-            Register
+            {isLoading ? (
+              <>
+                <FaSpinner className="animate-spin mr-2" />
+                Registering...
+              </>
+            ) : (
+              "Register"
+            )}
           </Button>
-        </form>
+        </Form>
 
         <p className="text-center text-sm mt-4">
           Already have an account?
@@ -196,5 +255,3 @@ const Register = () => {
     </div>
   );
 };
-
-export default Register;

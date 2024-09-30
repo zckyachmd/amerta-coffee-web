@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { APP_API_BASEURL } from "@/lib/env";
-import useAuth from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import Swal from "sweetalert2";
 
 const Navbar = () => {

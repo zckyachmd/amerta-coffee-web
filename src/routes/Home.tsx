@@ -2,10 +2,52 @@ import { useLoaderData, Link } from "react-router-dom";
 import { FaArrowRight } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import { Sliders } from "@/components/ui/sliders";
-import { loader } from "./HomeLoader";
+import { APP_API_BASEURL } from "@/lib/env";
 import ProductList from "@/components/ProductList";
 
-const Home = () => {
+export const loader = async () => {
+  const imageSlides = [
+    {
+      imageUrl:
+        "https://d8g5mz6srwlcs.cloudfront.net/original/66e26a620c6ce765056231.jpg",
+      url: "#",
+    },
+    {
+      imageUrl:
+        "https://d8g5mz6srwlcs.cloudfront.net/original/66e26e3ea0a87535503441.jpg",
+      url: "#",
+    },
+    {
+      imageUrl:
+        "https://d8g5mz6srwlcs.cloudfront.net/original/66e256e2bc73c391604882.jpg",
+      url: "#",
+    },
+    {
+      imageUrl:
+        "https://d8g5mz6srwlcs.cloudfront.net/original/66e3a5327e313561543844.jpg",
+      url: "#",
+    },
+  ];
+
+  try {
+    const response = await fetch(
+      `${APP_API_BASEURL}/products?limit=3&s=${encodeURIComponent(
+        JSON.stringify({ createdAt: "desc" })
+      )}`
+    );
+
+    if (!response.ok) {
+      throw new Error(response.statusText || "Failed to fetch products!");
+    }
+
+    const { data } = await response.json();
+    return { products: data.products, imageSlides };
+  } catch {
+    return { products: [], imageSlides };
+  }
+};
+
+export const Home: React.FC = () => {
   const { products, imageSlides } = useLoaderData() as Awaited<
     ReturnType<typeof loader>
   >;
@@ -33,7 +75,7 @@ const Home = () => {
         <ProductList products={products} />
         <div className="text-center mt-6">
           <Link to="/products">
-            <Button className="bg-coffee text-white hover:bg-coffee-hover px-6 py-3 rounded-full transition duration-300 transform hover:scale-105">
+            <Button className="bg-coffee text-white hover:bg-coffee-hover px-6 py-3 rounded-full">
               <span className="mr-2">Browse More Coffee</span>
               <FaArrowRight className="w-4 h-4" />
             </Button>
@@ -43,5 +85,3 @@ const Home = () => {
     </>
   );
 };
-
-export default Home;
