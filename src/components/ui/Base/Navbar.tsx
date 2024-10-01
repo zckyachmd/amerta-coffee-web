@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, Form } from "react-router-dom";
 import { FaUser, FaShoppingCart, FaSearch, FaBars } from "react-icons/fa";
 import { IoMdClose } from "react-icons/io";
 import { Input } from "@/components/ui/input";
@@ -73,7 +73,8 @@ const Navbar = () => {
 
         {/* Search Form */}
         <div className="hidden lg:flex flex-1 justify-center mx-6">
-          <form
+          <Form
+            method="get"
             onSubmit={handleSearchSubmit}
             className="flex w-full max-w-lg items-center space-x-2"
           >
@@ -90,7 +91,7 @@ const Navbar = () => {
             >
               <FaSearch className="w-5 h-5" />
             </Button>
-          </form>
+          </Form>
         </div>
 
         {/* Mobile Menu Toggle */}
@@ -153,7 +154,11 @@ const Navbar = () => {
           }`}
         >
           <div className="flex flex-col items-start space-y-4 py-4 px-6">
-            <div className="flex w-full max-w-lg items-center space-x-2 my-2">
+            <Form
+              method="get"
+              onSubmit={handleSearchSubmit}
+              className="flex w-full max-w-lg items-center space-x-2 my-2"
+            >
               <Input
                 type="text"
                 placeholder="Search products..."
@@ -163,12 +168,11 @@ const Navbar = () => {
               />
               <Button
                 type="submit"
-                onClick={handleSearchSubmit}
                 className="bg-gray-600 text-white rounded-lg hover:bg-gray-500"
               >
                 <FaSearch className="w-5 h-5" />
               </Button>
-            </div>
+            </Form>
             {auth.isLoggedIn ? (
               <div className="flex w-full">
                 <DropdownMenu modal={false}>

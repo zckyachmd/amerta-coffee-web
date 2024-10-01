@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Form } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FaCartPlus } from "react-icons/fa";
@@ -32,6 +32,7 @@ const ProductList: React.FC<any> = ({ products }) => {
       });
 
       toast.success("Item added to cart!");
+      navigate("/carts");
     } catch (error: Error | any) {
       toast.error(error.message || "Failed to add item to cart.");
     }
@@ -73,7 +74,7 @@ const ProductList: React.FC<any> = ({ products }) => {
                     <p className="text-gray-700 mb-4">
                       Rp {product.price.toLocaleString("id-ID")}
                     </p>
-                    <div className="mt-auto">
+                    <Form className="mt-auto">
                       <Button
                         className={`w-full py-2 ${
                           isOutOfStock
@@ -89,7 +90,7 @@ const ProductList: React.FC<any> = ({ products }) => {
                         <FaCartPlus className="w-6 h-6 mr-2" />
                         {isOutOfStock ? "Out of Stock" : "Add to Cart"}
                       </Button>
-                    </div>
+                    </Form>
                   </div>
                 </CardContent>
               </Card>

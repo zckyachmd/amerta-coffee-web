@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActionFunctionArgs,
   redirect,
   useLoaderData,
+  useLocation,
   useNavigate,
 } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -89,10 +90,14 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 export const Cart: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const carts = useLoaderData() as Awaited<ReturnType<typeof loader>>;
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   const handleQuantityChange = async (itemId: string, quantity: number) => {
+    const scrollPosition = window.scrollY;
+    sessionStorage.setItem("scrollPosition", scrollPosition.toString());
+
     const formData = new FormData();
     formData.append("actionType", "updateQuantity");
     formData.append("itemId", itemId);
@@ -108,7 +113,7 @@ export const Cart: React.FC = () => {
 
     if (response.status === 200) {
       toast.success("Quantity updated successfully.");
-      navigate(`/carts`, { replace: true });
+      navigate(`/carts`, { state: { scrollPosition }, replace: true });
     }
   };
 
@@ -158,6 +163,12 @@ export const Cart: React.FC = () => {
       setIsCheckingOut(false);
     }
   };
+
+  useEffect(() => {
+    if (location.state && location.state.scrollPosition) {
+      window.scrollTo(0, location.state.scrollPosition);
+    }
+  }, [location]);
 
   return (
     <div className="max-w-6xl mx-auto p-4">

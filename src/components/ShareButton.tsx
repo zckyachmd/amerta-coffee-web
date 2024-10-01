@@ -6,7 +6,6 @@ import {
   FaCopy,
   FaShareAlt,
 } from "react-icons/fa";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -32,9 +31,9 @@ const ShareButton: React.FC<ShareButtonProps> = ({ url }: ShareButtonProps) => {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger>
-        <Button className="bg-gray-300 hover:bg-gray-400 text-black flex items-center justify-center w-8 h-8 p-0 rounded-full">
+        <span className="bg-gray-300 hover:bg-gray-400 text-black flex items-center justify-center w-8 h-8 p-0 rounded-full">
           <FaShareAlt className="text-xs" />
-        </Button>
+        </span>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuItem
