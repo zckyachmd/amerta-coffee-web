@@ -1,8 +1,8 @@
 import React, { useState, useEffect, ReactNode, useCallback } from "react";
 import { useCookies } from "react-cookie";
 import { AuthContext } from "./AuthContext";
-import * as auth from "@/lib/auth";
 import { APP_API_BASEURL } from "@/lib/env";
+import * as auth from "@/lib/auth";
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
@@ -16,6 +16,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     setIsLoggedIn(!!cookies.accessToken || !!cookies.refreshToken);
   }, [cookies.accessToken, cookies.refreshToken]);
+
+  const login = useCallback((token: string, refreshToken: string) => {
+    auth.setAccessToken(token);
+    auth.setRefreshToken(refreshToken);
+    setIsLoggedIn(true);
+  }, []);
 
   const logout = useCallback(() => {
     fetch(`${APP_API_BASEURL}/auth/logout`, {
@@ -32,17 +38,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const handleRequest = async (
     requestFunc: () => Promise<Response>
   ): Promise<Response> => {
-    const accessToken = cookies.accessToken;
-
-    if (!accessToken || auth.isTokenExpired(accessToken)) {
-      const newAccessToken = await auth.refreshAccessToken();
-
-      if (!newAccessToken) {
-        throw new Error("Unable to refresh access token");
-      }
-    }
-
     try {
+      const accessToken = cookies.accessToken;
+      if (!accessToken || auth.isTokenExpired(accessToken)) {
+        const newAccessToken = await auth.refreshAccessToken();
+
+        if (!newAccessToken) {
+          throw new Error("Unable to refresh access token");
+        }
+      }
+
       const response = await requestFunc();
       if (!response.ok) {
         const newAccessToken = await auth.refreshAccessToken();
@@ -55,28 +60,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       }
       return response;
     } catch (error) {
-      logout();
+      setIsLoggedIn(false);
       throw error;
     }
   };
-
-  const login = useCallback((token: string, refreshToken: string) => {
-    auth.setAccessToken(token);
-    auth.setRefreshToken(refreshToken);
-    setIsLoggedIn(true);
-  }, []);
-
-  useEffect(() => {
-    const intervalId = setInterval(async () => {
-      const accessToken = cookies.accessToken;
-
-      if (!accessToken || auth.isTokenExpired(accessToken)) {
-        await auth.refreshAccessToken();
-      }
-    }, 5 * 60 * 1000);
-
-    return () => clearInterval(intervalId);
-  }, [cookies.accessToken]);
 
   return (
     <AuthContext.Provider value={{ isLoggedIn, login, logout, handleRequest }}>

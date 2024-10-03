@@ -18,8 +18,8 @@ export const loader = async () => {
   try {
     const response = await apiFetch("/cart");
 
-    if (!response.ok) {
-      throw new Error(response.statusText || "Failed to fetch cart!");
+    if (!response) {
+      throw new Error("Failed to fetch cart!");
     }
 
     const { data } = await response.json();
@@ -46,7 +46,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           },
         });
 
-        if (!updateResponse.ok) {
+        if (!updateResponse) {
           throw new Error("Failed to update quantity.");
         }
 
@@ -58,7 +58,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           method: "DELETE",
         });
 
-        if (!deleteResponse.ok) {
+        if (!deleteResponse) {
           throw new Error("Failed to delete item.");
         }
 
@@ -70,7 +70,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           method: "POST",
         });
 
-        if (!checkoutResponse.ok) {
+        if (!checkoutResponse) {
           throw new Error("Checkout failed.");
         }
 

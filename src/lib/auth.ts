@@ -90,8 +90,7 @@ export const refreshAccessToken = async (): Promise<string | null> => {
     setRefreshToken(newRefreshToken);
 
     return newAccessToken;
-  } catch (error) {
-    console.error(error);
+  } catch {
     return null;
   }
 };

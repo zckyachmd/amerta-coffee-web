@@ -22,19 +22,28 @@ const ProductList: React.FC<any> = ({ products }) => {
       return;
     }
 
-    try {
-      await apiFetch("/cart/item", {
+    const response = await apiFetch(
+      "/cart/item",
+      {
         method: "POST",
         payload: {
           productId,
           quantity: 1,
         },
-      });
+      },
+      (error) => {
+        if (error.message === "Unable to refresh access token") {
+          toast.error("Please log in to add items to the cart.");
+          navigate("/login");
+        } else {
+          toast.error(error.message || "Failed to add item to cart.");
+        }
+      }
+    );
 
+    if (response) {
       toast.success("Item added to cart!");
       navigate("/carts");
-    } catch (error: Error | any) {
-      toast.error(error.message || "Failed to add item to cart.");
     }
   };
 

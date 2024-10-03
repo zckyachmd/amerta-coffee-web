@@ -14,8 +14,8 @@ export const loader = async () => {
   try {
     const response = await apiFetch("/auth/me");
 
-    if (!response.ok) {
-      throw new Error(response.statusText || "Failed to fetch user!");
+    if (!response) {
+      throw new Error("Failed to fetch user!");
     }
 
     const { data } = await response.json();

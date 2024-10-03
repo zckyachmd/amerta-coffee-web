@@ -6,7 +6,6 @@ import { Sliders } from "@/components/ui/sliders";
 import ShareButton from "@/components/ShareButton";
 import { FaCartPlus } from "react-icons/fa";
 import { toast } from "react-toastify";
-import { getAccessToken } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
 import { APP_API_BASEURL } from "@/lib/env";
 import { LoaderFunctionArgs } from "react-router-dom";
@@ -27,40 +26,39 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request }: any) => {
-  const accessToken = getAccessToken();
-
-  if (!accessToken) {
-    toast.error("Please log in to add items to the cart.");
-    return redirect("/login");
-  }
-
   const formData = await request.formData();
-  const productId = formData.get("productId");
+  const productId = formData.get("productId") as string;
   const quantity = Number(formData.get("quantity")) || 1;
 
   if (!productId) {
-    toast.error("Product ID is required");
-    return;
+    return { error: "Product ID is required" };
   }
 
   try {
-    const response = await apiFetch(`/cart/item`, {
-      method: "POST",
-      payload: {
-        productId,
-        quantity,
+    const response = await apiFetch(
+      `/cart/item`,
+      {
+        method: "POST",
+        payload: { productId, quantity },
       },
-    });
+      (error) => {
+        if (error.message === "Unable to refresh access token") {
+          toast.error("Please log in to add items to the cart.");
+          return redirect("/login");
+        } else {
+          toast.error(error.message || "Failed to add item to cart.");
+        }
+      }
+    );
 
-    if (response.ok) {
+    if (response) {
       toast.success("Item added to cart!");
       return redirect("/carts");
     }
 
-    const { error } = await response.json();
-    throw new Error(error || "Failed to add item to cart.");
-  } catch (error: any) {
-    throw new Error(error.message);
+    return;
+  } catch (error) {
+    return error as { error: string };
   }
 };
 
@@ -85,6 +83,18 @@ export const ProductDetail = () => {
     if (!isNaN(value) && value > 0 && value <= product.stock_qty) {
       setQuantity(value);
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.currentTarget);
+    formData.append("productId", product.id);
+
+    await action({
+      request: new Request("", { method: "POST", body: formData }),
+      params: {},
+    });
   };
 
   return (
@@ -203,15 +213,15 @@ export const ProductDetail = () => {
               </Button>
             </div>
 
-            <Form method="post">
-              <input type="hidden" name="productId" value={product.id} />
+            <Form method="post" onSubmit={handleSubmit}>
               <input type="hidden" name="quantity" value={quantity} />
               <Button
                 type="submit"
                 className="bg-coffee text-white hover:bg-coffee-hover px-6 py-3 rounded-full w-full"
                 disabled={!product.isAvailable || product.stock_qty === 0}
               >
-                <FaCartPlus className="mr-2" /> Add to Cart
+                <FaCartPlus className="mr-2" />
+                Add to Cart
               </Button>
             </Form>
           </div>
