@@ -30,10 +30,6 @@ export const action = async ({ request }: any) => {
   const productId = formData.get("productId") as string;
   const quantity = Number(formData.get("quantity")) || 1;
 
-  if (!productId) {
-    return { error: "Product ID is required" };
-  }
-
   try {
     const response = await apiFetch(
       `/cart/item`,
@@ -42,23 +38,28 @@ export const action = async ({ request }: any) => {
         payload: { productId, quantity },
       },
       (error) => {
-        if (error.message === "Unable to refresh access token") {
-          toast.error("Please log in to add items to the cart.");
-          return redirect("/login");
-        } else {
-          toast.error(error.message || "Failed to add item to cart.");
-        }
+        throw new Error(error.message);
       }
     );
 
-    if (response) {
-      toast.success("Item added to cart!");
-      return redirect("/carts");
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Unknown error");
     }
 
-    return;
+    toast.success("Product added to cart!");
+    return redirect("/carts");
   } catch (error) {
-    return error as { error: string };
+    const errorMessage =
+      error instanceof Error ? error.message : "An unexpected error occurred.";
+
+    if (errorMessage == "Unable to refresh access token!") {
+      toast.error("You must be logged in to add product(s) to cart!");
+      return redirect("/login");
+    }
+
+    toast.error(errorMessage || "Failed to add product(s) to cart.");
+    return false;
   }
 };
 
@@ -83,18 +84,6 @@ export const ProductDetail = () => {
     if (!isNaN(value) && value > 0 && value <= product.stock_qty) {
       setQuantity(value);
     }
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const formData = new FormData(e.currentTarget);
-    formData.append("productId", product.id);
-
-    await action({
-      request: new Request("", { method: "POST", body: formData }),
-      params: {},
-    });
   };
 
   return (
@@ -213,7 +202,8 @@ export const ProductDetail = () => {
               </Button>
             </div>
 
-            <Form method="post" onSubmit={handleSubmit}>
+            <Form method="post">
+              <input type="hidden" name="productId" value={product.id} />
               <input type="hidden" name="quantity" value={quantity} />
               <Button
                 type="submit"

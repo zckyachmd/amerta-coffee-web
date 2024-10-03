@@ -1,49 +1,55 @@
 import React from "react";
-import { useNavigate, Form } from "react-router-dom";
+import { useNavigate, Form, redirect } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FaCartPlus } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { apiFetch } from "@/lib/api";
-import { useAuth } from "@/hooks/useAuth";
 
 const ProductList: React.FC<any> = ({ products }) => {
   const navigate = useNavigate();
-  const auth = useAuth();
 
   const handleCardClick = (slug: string) => {
     navigate(`/product/${slug}`);
   };
 
   const handleAddToCart = async (productId: string) => {
-    if (!auth.isLoggedIn) {
-      toast.error("Please log in to add items to the cart.");
-      navigate("/login");
-      return;
-    }
-
-    const response = await apiFetch(
-      "/cart/item",
-      {
-        method: "POST",
-        payload: {
-          productId,
-          quantity: 1,
+    try {
+      const response = await apiFetch(
+        "/cart/item",
+        {
+          method: "POST",
+          payload: {
+            productId,
+            quantity: 1,
+          },
         },
-      },
-      (error) => {
-        if (error.message === "Unable to refresh access token") {
-          toast.error("Please log in to add items to the cart.");
-          navigate("/login");
-        } else {
-          toast.error(error.message || "Failed to add item to cart.");
+        (error) => {
+          throw new Error(error.message);
         }
-      }
-    );
+      );
 
-    if (response) {
-      toast.success("Item added to cart!");
-      navigate("/carts");
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Unknown error");
+      }
+
+      toast.success("Product added to cart!");
+      return redirect("/carts");
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred.";
+
+      if (errorMessage == "Unable to refresh access token!") {
+        toast.error("You must be logged in to add product(s) to cart!");
+        navigate("/login");
+        return;
+      }
+
+      toast.error(errorMessage || "Failed to add product(s) to cart.");
+      return false;
     }
   };
 

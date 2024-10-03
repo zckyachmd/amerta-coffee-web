@@ -10,8 +10,8 @@ import { APP_API_BASEURL } from "@/lib/env";
 
 const handleRequest = async (
   requestFunc: () => Promise<Response>,
-  onError: (error: Error) => void
-): Promise<Response | undefined> => {
+  onError: (error: Error) => any
+): Promise<Response | any> => {
   let accessToken = getAccessToken();
 
   try {
@@ -21,28 +21,28 @@ const handleRequest = async (
       if (!newAccessToken) {
         removeAccessToken();
         removeRefreshToken();
-        throw new Error("Unable to refresh access token");
+        throw new Error("Unable to refresh access token!");
       }
 
       accessToken = newAccessToken;
       setAccessToken(accessToken);
     }
+
     const response = await requestFunc();
     if (!response.ok) {
       throw new Error("Request failed: " + response.statusText);
     }
     return response;
   } catch (error: Error | any) {
-    onError(error);
-    return;
+    return onError(error);
   }
 };
 
 const apiFetch = async (
   endpoint: string,
   options: { method?: string; payload?: any } = {},
-  onError?: (error: Error) => void
-): Promise<Response | undefined> => {
+  onError?: (error: Error) => any
+): Promise<Response | any> => {
   const url = `${APP_API_BASEURL}${endpoint}`;
   const { method = "GET", payload } = options;
 
