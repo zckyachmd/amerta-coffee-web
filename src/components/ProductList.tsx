@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate, Form, redirect } from "react-router-dom";
+import { useNavigate, Form } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FaCartPlus } from "react-icons/fa";
@@ -35,7 +35,7 @@ const ProductList: React.FC<any> = ({ products }) => {
       }
 
       toast.success("Product added to cart!");
-      return redirect("/carts");
+      return navigate("/carts");
     } catch (error) {
       const errorMessage =
         error instanceof Error
@@ -44,8 +44,7 @@ const ProductList: React.FC<any> = ({ products }) => {
 
       if (errorMessage == "Unable to refresh access token!") {
         toast.error("You must be logged in to add product(s) to cart!");
-        navigate("/login");
-        return;
+        return navigate("/login");
       }
 
       toast.error(errorMessage || "Failed to add product(s) to cart.");

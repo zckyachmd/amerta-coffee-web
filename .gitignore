@@ -26,6 +26,7 @@ dist-ssr
 # OS-specific files
 .DS_Store
 Thumbs.db
+bun.lockb
 
 # dotenv environment variable files
 .env

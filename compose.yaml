@@ -1,0 +1,11 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${VITE_WEB_PORT}:80"
+    restart: always
+    container_name: "amerta-coffee-web"
+    volumes:
+      - ./:/app
