@@ -1,5 +1,5 @@
-import { redirect, useLoaderData } from "react-router-dom";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { redirect, useLoaderData, useNavigate } from "react-router-dom";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Card,
   CardHeader,
@@ -26,6 +26,7 @@ export const loader = async () => {
 };
 
 export const Profile: React.FC = () => {
+  const navigate = useNavigate();
   const user = useLoaderData() as Awaited<ReturnType<typeof loader>>;
 
   return (
@@ -33,6 +34,10 @@ export const Profile: React.FC = () => {
       <div className="flex items-center space-x-4 mb-6">
         <Avatar className="w-24 h-24 rounded-full border-4 border-gray-300 shadow-lg hover:shadow-xl transition-shadow duration-200">
           <AvatarImage src={user.avatar} alt={user.name} />
+          <AvatarFallback className="text-3xl font-bold">
+            {" "}
+            {user.name?.charAt(0).toUpperCase() || "?"}{" "}
+          </AvatarFallback>
         </Avatar>
         <div>
           <h2 className="text-2xl font-bold text-gray-800">{user.name}</h2>
@@ -67,7 +72,8 @@ export const Profile: React.FC = () => {
         <CardFooter>
           <Button
             variant="outline"
-            className="w-full border-gray-300 hover:bg-gray-100 transition duration-200"
+            className="w-full text-white hover:text-white font-semibold border-coffee bg-coffee hover:bg-coffee-hover transition duration-200"
+            onClick={() => navigate("/orders")}
           >
             <FaHistory className="w-5 h-5 mr-2" /> View Order History
           </Button>

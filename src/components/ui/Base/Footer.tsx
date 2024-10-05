@@ -146,7 +146,7 @@ const Footer = () => {
                   className="block w-16 h-16"
                 >
                   <img
-                    src="img/marketplace-bukalapak.webp"
+                    src="/img/marketplace-bukalapak.webp"
                     alt="Bukalapak"
                     className="w-full h-full object-cover"
                   />
@@ -158,7 +158,7 @@ const Footer = () => {
                   className="block w-16 h-16"
                 >
                   <img
-                    src="img/marketplace-tokopedia.webp"
+                    src="/img/marketplace-tokopedia.webp"
                     alt="Tokopedia"
                     className="w-full h-full object-cover"
                   />
@@ -170,7 +170,7 @@ const Footer = () => {
                   className="block w-16 h-16"
                 >
                   <img
-                    src="img/marketplace-lazada.webp"
+                    src="/img/marketplace-lazada.webp"
                     alt="Lazada"
                     className="w-full h-full object-cover"
                   />
@@ -182,7 +182,7 @@ const Footer = () => {
                   className="block w-16 h-16"
                 >
                   <img
-                    src="img/marketplace-shopee.webp"
+                    src="/img/marketplace-shopee.webp"
                     alt="Shopee"
                     className="w-full h-full object-cover"
                   />

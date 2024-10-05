@@ -70,7 +70,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       }
 
       case "checkout": {
-        await apiFetch(
+        const response = await apiFetch(
           "/cart/checkout",
           {
             method: "POST",
@@ -79,8 +79,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             throw new Error(error.message || "Checkout failed.");
           }
         );
+        const { order } = await response.json();
 
-        return { status: 200 };
+        return { status: 200, order };
       }
 
       default:
@@ -166,8 +167,10 @@ export const Cart: React.FC = () => {
       });
 
       if (response.status === 200) {
+        const { id } = response.order;
+
         toast.success("Checkout successful!");
-        navigate(`/carts`, { replace: true });
+        navigate(`/order/${id}`);
       }
 
       setIsCheckingOut(false);

@@ -14,6 +14,8 @@ import * as ProductDetailRoute from "@/routes/ProductDetail";
 import * as RegisterRoute from "@/routes/Register";
 import * as LoginRoute from "@/routes/Login";
 import * as CartRoute from "@/routes/Cart";
+import * as OrderHistoryRoute from "@/routes/OrderHistory";
+import * as OrderDetailRoute from "@/routes/Order";
 import * as ProfileRoute from "@/routes/Profile";
 
 const router = createBrowserRouter([
@@ -55,6 +57,16 @@ const router = createBrowserRouter([
         element: <CartRoute.Cart />,
         loader: CartRoute.loader,
         action: CartRoute.action,
+      },
+      {
+        path: "/orders",
+        element: <OrderHistoryRoute.OrderHistory />,
+        loader: OrderHistoryRoute.loader,
+      },
+      {
+        path: "/order/:orderId",
+        element: <OrderDetailRoute.OrderDetail />,
+        loader: OrderDetailRoute.loader,
       },
       {
         path: "/profile",
