@@ -8,23 +8,15 @@ import ProductList from "@/components/ProductList";
 export const loader = async () => {
   const imageSlides = [
     {
-      imageUrl:
-        "https://d8g5mz6srwlcs.cloudfront.net/original/66e26a620c6ce765056231.jpg",
+      imageUrl: "img/slides/66fb03dab5647963809283.jpg",
+      url: "/products",
+    },
+    {
+      imageUrl: "img/slides/66fbc96abdccc232270105.jpg",
       url: "#",
     },
     {
-      imageUrl:
-        "https://d8g5mz6srwlcs.cloudfront.net/original/66e26e3ea0a87535503441.jpg",
-      url: "#",
-    },
-    {
-      imageUrl:
-        "https://d8g5mz6srwlcs.cloudfront.net/original/66e256e2bc73c391604882.jpg",
-      url: "#",
-    },
-    {
-      imageUrl:
-        "https://d8g5mz6srwlcs.cloudfront.net/original/66e3a5327e313561543844.jpg",
+      imageUrl: "img/slides/66fd2aedd4bc4876882426.jpg",
       url: "#",
     },
   ];

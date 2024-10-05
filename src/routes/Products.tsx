@@ -118,8 +118,7 @@ export const Products: React.FC = () => {
       <div
         className="relative bg-cover bg-center h-60"
         style={{
-          backgroundImage:
-            'url("https://d8g5mz6srwlcs.cloudfront.net/original/64afc69d2f7ca099373483.jpg")',
+          backgroundImage: 'url("img/banner-products.jpg")',
         }}
       >
         <div className="absolute inset-0 bg-black opacity-50"></div>
