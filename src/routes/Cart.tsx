@@ -39,40 +39,46 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     switch (actionType) {
       case "updateQuantity": {
         const quantity = formData.get("quantity");
-        const updateResponse = await apiFetch(`/cart/item/${itemId}`, {
-          method: "PATCH",
-          payload: {
-            quantity: Number(quantity),
+        await apiFetch(
+          `/cart/item/${itemId}`,
+          {
+            method: "PATCH",
+            payload: {
+              quantity: Number(quantity),
+            },
           },
-        });
-
-        if (!updateResponse) {
-          throw new Error("Failed to update quantity.");
-        }
+          (error) => {
+            throw new Error(error.message || "Failed to update quantity.");
+          }
+        );
 
         return { status: 200 };
       }
 
       case "remove": {
-        const deleteResponse = await apiFetch(`/cart/item/${itemId}`, {
-          method: "DELETE",
-        });
-
-        if (!deleteResponse) {
-          throw new Error("Failed to delete item.");
-        }
+        await apiFetch(
+          `/cart/item/${itemId}`,
+          {
+            method: "DELETE",
+          },
+          (error) => {
+            throw new Error(error.message || "Failed to delete item.");
+          }
+        );
 
         return { status: 200 };
       }
 
       case "checkout": {
-        const checkoutResponse = await apiFetch("/cart/checkout", {
-          method: "POST",
-        });
-
-        if (!checkoutResponse) {
-          throw new Error("Checkout failed.");
-        }
+        await apiFetch(
+          "/cart/checkout",
+          {
+            method: "POST",
+          },
+          (error) => {
+            throw new Error(error.message || "Checkout failed.");
+          }
+        );
 
         return { status: 200 };
       }
@@ -93,6 +99,7 @@ export const Cart: React.FC = () => {
   const location = useLocation();
   const carts = useLoaderData() as Awaited<ReturnType<typeof loader>>;
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [loadingItemId, setLoadingItemId] = useState<string | null>(null);
 
   const handleQuantityChange = async (itemId: string, quantity: number) => {
     const scrollPosition = window.scrollY;
@@ -112,12 +119,13 @@ export const Cart: React.FC = () => {
     });
 
     if (response.status === 200) {
-      toast.success("Quantity updated successfully.");
       navigate(`/carts`, { state: { scrollPosition }, replace: true });
     }
   };
 
   const handleRemoveItem = async (itemId: string) => {
+    setLoadingItemId(itemId);
+
     const formData = new FormData();
     formData.append("actionType", "remove");
     formData.append("itemId", itemId);
@@ -126,6 +134,8 @@ export const Cart: React.FC = () => {
       request: new Request("", { method: "POST", body: formData }),
       params: {},
     });
+
+    setLoadingItemId(null);
 
     if (response.status === 200) {
       toast.success("Item deleted successfully.");
@@ -167,6 +177,7 @@ export const Cart: React.FC = () => {
   useEffect(() => {
     if (location.state && location.state.scrollPosition) {
       window.scrollTo(0, location.state.scrollPosition);
+      sessionStorage.removeItem("scrollPosition");
     }
   }, [location]);
 
@@ -225,6 +236,7 @@ export const Cart: React.FC = () => {
                         );
                       }}
                       disabled={
+                        item.quantity <= 1 ||
                         item.product.stock_qty === 0 ||
                         !item.product.isAvailable
                       }
@@ -243,6 +255,7 @@ export const Cart: React.FC = () => {
                       onClick={(e) => e.stopPropagation()}
                       disabled={
                         item.product.stock_qty === 0 ||
+                        item.product.stock_qty <= item.quantity ||
                         !item.product.isAvailable
                       }
                     />
@@ -253,6 +266,7 @@ export const Cart: React.FC = () => {
                         handleQuantityChange(item.id, item.quantity + 1);
                       }}
                       disabled={
+                        item.product.stock_qty <= item.quantity ||
                         item.product.stock_qty === 0 ||
                         !item.product.isAvailable
                       }
@@ -263,8 +277,14 @@ export const Cart: React.FC = () => {
                   <Button
                     className="bg-red-500 text-white hover:bg-red-600 w-full md:w-32 py-2 mt-4 md:mt-0"
                     onClick={() => handleRemoveItem(item.id)}
+                    disabled={loadingItemId === item.id}
                   >
-                    <FaTrashAlt className="mr-1" /> Remove
+                    {loadingItemId === item.id ? (
+                      <FaSpinner className="animate-spin mr-1" />
+                    ) : (
+                      <FaTrashAlt className="mr-1" />
+                    )}
+                    Remove
                   </Button>
                 </div>
               </CardContent>

@@ -30,11 +30,15 @@ const handleRequest = async (
 
     const response = await requestFunc();
     if (!response.ok) {
-      throw new Error("Request failed: " + response.statusText);
+      const error = await response.json();
+      const errorMessage =
+        error.error?.toString() || "An unexpected error occurred.";
+      throw new Error(errorMessage);
     }
+
     return response;
   } catch (error: Error | any) {
-    return onError(error);
+    return onError ? onError(error) : error;
   }
 };
 

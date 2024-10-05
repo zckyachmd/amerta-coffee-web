@@ -163,7 +163,7 @@ export const Login: React.FC = () => {
             {isLoading ? (
               <>
                 <FaSpinner className="animate-spin mr-2" />
-                Processing...
+                Signing in...
               </>
             ) : (
               "Login"

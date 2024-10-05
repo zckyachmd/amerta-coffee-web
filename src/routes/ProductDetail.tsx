@@ -1,14 +1,15 @@
 import { useState } from "react";
-import { Form, redirect, useLoaderData } from "react-router-dom";
+import { Form, redirect, useLoaderData, useNavigation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sliders } from "@/components/ui/sliders";
 import ShareButton from "@/components/ShareButton";
-import { FaCartPlus } from "react-icons/fa";
+import { FaCartPlus, FaSpinner } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { apiFetch } from "@/lib/api";
 import { APP_API_BASEURL } from "@/lib/env";
 import { LoaderFunctionArgs } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const slug = params.slug as string;
@@ -31,21 +32,16 @@ export const action = async ({ request }: any) => {
   const quantity = Number(formData.get("quantity")) || 1;
 
   try {
-    const response = await apiFetch(
+    await apiFetch(
       `/cart/item`,
       {
         method: "POST",
         payload: { productId, quantity },
       },
       (error) => {
-        throw new Error(error.message);
+        throw new Error(error.message || "Failed to add product to cart.");
       }
     );
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || "Unknown error");
-    }
 
     toast.success("Product added to cart!");
     return redirect("/carts");
@@ -53,7 +49,7 @@ export const action = async ({ request }: any) => {
     const errorMessage =
       error instanceof Error ? error.message : "An unexpected error occurred.";
 
-    if (errorMessage == "Unable to refresh access token!") {
+    if (errorMessage === "Unable to refresh access token!") {
       toast.error("You must be logged in to add product(s) to cart!");
       return redirect("/login");
     }
@@ -65,6 +61,7 @@ export const action = async ({ request }: any) => {
 
 export const ProductDetail = () => {
   const { product } = useLoaderData() as Awaited<ReturnType<typeof loader>>;
+  const navigation = useNavigation();
 
   const [quantity, setQuantity] = useState<number>(
     product.isAvailable && product.stock_qty > 0 ? 1 : 0
@@ -103,9 +100,23 @@ export const ProductDetail = () => {
             <h1 className="text-3xl font-bold">{product.name}</h1>
             <ShareButton url={window.location.href} />
           </div>
-          <p className="text-xl font-semibold mb-4">
-            Rp {product.price.toLocaleString("id-ID")}
-          </p>
+          <div className="mb-2">
+            <p className="text-xl font-semibold mb-2">
+              Rp {product.price.toLocaleString("id-ID")}
+            </p>
+            <Badge
+              variant="outline"
+              className={`mt-1 ${
+                product.stock_qty > 0
+                  ? "bg-green-500 text-white"
+                  : "bg-red-500 text-white"
+              }`}
+            >
+              {product.stock_qty > 0
+                ? `Stock: ${product.stock_qty}`
+                : `Out of Stock`}
+            </Badge>
+          </div>
 
           <div className="mt-8">
             <div className="flex space-x-4 border-b border-gray-300">
@@ -181,7 +192,11 @@ export const ProductDetail = () => {
               <Button
                 className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded-full"
                 onClick={handleDecreaseQuantity}
-                disabled={!product.isAvailable || product.stock_qty === 0}
+                disabled={
+                  !product.isAvailable ||
+                  product.stock_qty === 0 ||
+                  quantity <= 1
+                }
               >
                 -
               </Button>
@@ -191,12 +206,20 @@ export const ProductDetail = () => {
                 onChange={handleQuantityChange}
                 className="input-no-spinner mx-4 text-xl w-24 text-center border border-gray-300 rounded"
                 min="1"
-                disabled={!product.isAvailable || product.stock_qty === 0}
+                disabled={
+                  !product.isAvailable ||
+                  product.stock_qty === 0 ||
+                  quantity >= product.stock_qty
+                }
               />
               <Button
                 className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded-full"
                 onClick={handleIncreaseQuantity}
-                disabled={!product.isAvailable || product.stock_qty === 0}
+                disabled={
+                  !product.isAvailable ||
+                  product.stock_qty === 0 ||
+                  quantity >= product.stock_qty
+                }
               >
                 +
               </Button>
@@ -207,11 +230,28 @@ export const ProductDetail = () => {
               <input type="hidden" name="quantity" value={quantity} />
               <Button
                 type="submit"
-                className="bg-coffee text-white hover:bg-coffee-hover px-6 py-3 rounded-full w-full"
-                disabled={!product.isAvailable || product.stock_qty === 0}
+                className={`bg-coffee text-white hover:bg-coffee-hover px-6 py-3 rounded-full w-full ${
+                  navigation.state === "submitting"
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                }`}
+                disabled={
+                  navigation.state === "submitting" ||
+                  !product.isAvailable ||
+                  product.stock_qty === 0
+                }
               >
-                <FaCartPlus className="mr-2" />
-                Add to Cart
+                {navigation.state === "submitting" ? (
+                  <FaSpinner className="animate-spin mr-2" />
+                ) : (
+                  <>
+                    <FaCartPlus className="mr-2" />
+                    Add to Cart
+                  </>
+                )}
+                {navigation.state === "submitting" && (
+                  <span> Loading...</span>
+                )}{" "}
               </Button>
             </Form>
           </div>

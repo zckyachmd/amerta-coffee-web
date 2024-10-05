@@ -1,21 +1,26 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate, Form } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FaCartPlus } from "react-icons/fa";
+import { FaCartPlus, FaSpinner } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { apiFetch } from "@/lib/api";
 
 const ProductList: React.FC<any> = ({ products }) => {
   const navigate = useNavigate();
 
+  const [loadingStates, setLoadingStates] = useState<{
+    [key: string]: boolean;
+  }>({});
+
   const handleCardClick = (slug: string) => {
     navigate(`/product/${slug}`);
   };
 
   const handleAddToCart = async (productId: string) => {
+    setLoadingStates((prev) => ({ ...prev, [productId]: true }));
     try {
-      const response = await apiFetch(
+      await apiFetch(
         "/cart/item",
         {
           method: "POST",
@@ -25,30 +30,26 @@ const ProductList: React.FC<any> = ({ products }) => {
           },
         },
         (error) => {
-          throw new Error(error.message);
+          throw new Error(error.message || "Failed to add product to cart.");
         }
       );
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Unknown error");
-      }
-
       toast.success("Product added to cart!");
-      return navigate("/carts");
+      navigate("/carts");
     } catch (error) {
       const errorMessage =
         error instanceof Error
           ? error.message
           : "An unexpected error occurred.";
 
-      if (errorMessage == "Unable to refresh access token!") {
+      if (errorMessage === "Unable to refresh access token!") {
         toast.error("You must be logged in to add product(s) to cart!");
         return navigate("/login");
       }
 
-      toast.error(errorMessage || "Failed to add product(s) to cart.");
-      return false;
+      return toast.error(errorMessage || "Failed to add product(s) to cart.");
+    } finally {
+      setLoadingStates((prev) => ({ ...prev, [productId]: false }));
     }
   };
 
@@ -88,7 +89,7 @@ const ProductList: React.FC<any> = ({ products }) => {
                     <p className="text-gray-700 mb-4">
                       Rp {product.price.toLocaleString("id-ID")}
                     </p>
-                    <Form className="mt-auto">
+                    <Form className="mt-auto" onSubmit={(e) => e.preventDefault()}>
                       <Button
                         className={`w-full py-2 ${
                           isOutOfStock
@@ -101,8 +102,16 @@ const ProductList: React.FC<any> = ({ products }) => {
                         }}
                         disabled={isOutOfStock}
                       >
-                        <FaCartPlus className="w-6 h-6 mr-2" />
-                        {isOutOfStock ? "Out of Stock" : "Add to Cart"}
+                        {loadingStates[product.id] ? (
+                          <FaSpinner className="animate-spin mr-2" />
+                        ) : (
+                          <FaCartPlus className="w-6 h-6 mr-2" />
+                        )}
+                        {isOutOfStock
+                          ? "Out of Stock"
+                          : loadingStates[product.id]
+                          ? "Adding..."
+                          : "Add to Cart"}
                       </Button>
                     </Form>
                   </div>
