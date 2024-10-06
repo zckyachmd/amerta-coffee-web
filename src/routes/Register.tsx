@@ -16,8 +16,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const address = data.get("address") as string;
   const phone = data.get("phone") as string;
 
-  useDocumentTitle('Register');
-
   const handleErrorResponse = async (response: Response) => {
     const errorResponse = await response.json();
     const errors: Record<string, string> = {};
@@ -71,6 +69,8 @@ export const Register = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  useDocumentTitle("Register");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
