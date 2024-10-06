@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { FaCreditCard, FaSpinner, FaTrashAlt } from "react-icons/fa";
 import { apiFetch } from "@/lib/api";
 import Swal from "sweetalert2";
+import useDocumentTitle from "@/hooks/useDocumentTitle";
 
 export const loader = async () => {
   try {
@@ -101,6 +102,8 @@ export const Cart: React.FC = () => {
   const carts = useLoaderData() as Awaited<ReturnType<typeof loader>>;
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [loadingItemId, setLoadingItemId] = useState<string | null>(null);
+
+  useDocumentTitle('Cart');
 
   const handleQuantityChange = async (itemId: string, quantity: number) => {
     const scrollPosition = window.scrollY;

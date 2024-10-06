@@ -4,6 +4,7 @@ import { Pagination } from "@/components/Pagination";
 import { Button } from "@/components/ui/button";
 import { APP_API_BASEURL } from "@/lib/env";
 import ProductList from "@/components/ProductList";
+import useDocumentTitle from "@/hooks/useDocumentTitle";
 
 const LIMIT = 9;
 
@@ -69,6 +70,8 @@ export const Products: React.FC = () => {
   const [searchParams] = useSearchParams();
 
   const totalPages = Math.ceil(total / LIMIT);
+
+  useDocumentTitle('Product');
 
   const getParam = (key: string, defaultValue?: string) => {
     return searchParams.get(key) || defaultValue;

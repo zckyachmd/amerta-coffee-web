@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { APP_API_BASEURL } from "@/lib/env";
+import useDocumentTitle from "@/hooks/useDocumentTitle";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const data = await request.formData();
@@ -14,6 +15,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const confirmPassword = data.get("confirmPassword") as string;
   const address = data.get("address") as string;
   const phone = data.get("phone") as string;
+
+  useDocumentTitle('Register');
 
   const handleErrorResponse = async (response: Response) => {
     const errorResponse = await response.json();

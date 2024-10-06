@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Sliders } from "@/components/ui/sliders";
 import { APP_API_BASEURL } from "@/lib/env";
 import ProductList from "@/components/ProductList";
+import useDocumentTitle from "@/hooks/useDocumentTitle";
 
 export const loader = async () => {
   const imageSlides = [
@@ -43,6 +44,8 @@ export const Home: React.FC = () => {
   const { products, imageSlides } = useLoaderData() as Awaited<
     ReturnType<typeof loader>
   >;
+  
+  useDocumentTitle();
 
   return (
     <>

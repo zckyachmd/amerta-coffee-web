@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { APP_API_BASEURL } from "@/lib/env";
 import * as auth from "@/lib/auth";
+import useDocumentTitle from "@/hooks/useDocumentTitle";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const data = await request.formData();
@@ -65,6 +66,8 @@ export const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const authContext = useAuth();
+
+  useDocumentTitle('Login');
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

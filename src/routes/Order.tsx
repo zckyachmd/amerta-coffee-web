@@ -1,6 +1,7 @@
 import { Link, LoaderFunctionArgs, useLoaderData } from "react-router-dom";
 import { apiFetch } from "@/lib/api";
 import { FaArrowLeft } from "react-icons/fa";
+import useDocumentTitle from "@/hooks/useDocumentTitle";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   try {
@@ -24,6 +25,8 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 export const OrderDetail: React.FC = () => {
   const orderDetail = useLoaderData() as Awaited<ReturnType<typeof loader>>;
   const { noInvoice, totalAmount, createdAt, items } = orderDetail;
+
+  useDocumentTitle(`Order #${noInvoice}`);
 
   return (
     <main className="flex-1 w-full pt-8 px-0 py-0">

@@ -3,6 +3,7 @@ import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Table } from "@/components/ui/table";
 import { FaEye, FaShoppingCart } from "react-icons/fa";
+import useDocumentTitle from "@/hooks/useDocumentTitle";
 
 export const loader = async (): Promise<any> => {
   try {
@@ -23,6 +24,8 @@ export const loader = async (): Promise<any> => {
 export const OrderHistory: React.FC = () => {
   const navigate = useNavigate();
   const orders = useLoaderData() as Awaited<ReturnType<typeof loader>>;
+
+  useDocumentTitle('Order History');
 
   return (
     <main className="flex-1 w-full pt-8 px-0 py-0">

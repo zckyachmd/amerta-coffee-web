@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { FaHistory } from "react-icons/fa";
 import { apiFetch } from "@/lib/api";
+import useDocumentTitle from "@/hooks/useDocumentTitle";
 
 export const loader = async () => {
   try {
@@ -28,6 +29,8 @@ export const loader = async () => {
 export const Profile: React.FC = () => {
   const navigate = useNavigate();
   const user = useLoaderData() as Awaited<ReturnType<typeof loader>>;
+
+  useDocumentTitle(`${user.name} Profile`);
 
   return (
     <div className="flex flex-col items-center py-20 max-w-xl mx-auto">

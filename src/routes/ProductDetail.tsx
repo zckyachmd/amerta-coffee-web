@@ -10,6 +10,7 @@ import { apiFetch } from "@/lib/api";
 import { APP_API_BASEURL } from "@/lib/env";
 import { LoaderFunctionArgs } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import useDocumentTitle from "@/hooks/useDocumentTitle";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const slug = params.slug as string;
@@ -67,6 +68,8 @@ export const ProductDetail = () => {
     product.isAvailable && product.stock_qty > 0 ? 1 : 0
   );
   const [activeTab, setActiveTab] = useState<string>("description");
+
+  useDocumentTitle(product.name);
 
   const handleIncreaseQuantity = () => {
     setQuantity((prev) => Math.min(prev + 1, product.stock_qty));
